@@ -1,4 +1,5 @@
 <?php
+//$Id$
 
 /**
  * @file
@@ -24,14 +25,6 @@ function views_calc_help($section) {
     case 'admin/modules#description':
       return t('This module will sum, count, and average rows and columns of numeric data in a views table.');
   }
-}
-
-
-/**
- * Implementation of hook_node_info().
- */
-function views_calc_node_info() {
-  return array('views_calc' => array('name' => t('views calc'), 'base' => 'views_calc'));
 }
 
 /**
@@ -125,7 +118,7 @@ function views_calc_settings() {
         $fields = $view->field; 
         $options = array('' => '');
         foreach ($fields as $key => $field) {
-           $options[$field['queryname']] = $field['label'];
+           $options[$field['queryname']] = $field['label'] ? $field['label'] : $field['queryname'];
         }
         $calcs = views_calc_calc_options();
         $form['views_calc'][$val] = array(
@@ -417,7 +410,7 @@ function theme_views_calc_table($view, $nodes) {
       } else {
         
         // format the main table rows
-        $cell['data'] = _views_handle_field($fields, $field, $node);
+        $cell['data'] = theme('views_handle_field', $fields, $field, $node);
         
         // give numeric data its own class
         if (is_numeric($cell['data'])) {
@@ -456,5 +449,3 @@ function theme_views_calc($items,$col_total, $col_count) {
   //$output = '<div>'. t('Table calculations have been performed.') . '</div>';
   //return $output;
 }
-
-
