@@ -18,16 +18,6 @@
  */
  
 /**
- * Implementation of hook_help().
- */
-function views_calc_help($section) {
-  switch ($section) {
-    case 'admin/modules#description':
-      return t('This module will sum, count, and average rows and columns of numeric data in a views table.');
-  }
-}
-
-/**
  * Implementation of hook_perm().
  */
 function views_calc_perm() {
@@ -50,21 +40,34 @@ function views_calc_menu($may_cache) {
   $items = array();
     
   $items[] = array(
+    'path' => 'admin/settings/views_calc',
+    'title' => t('Views Calc'),
+    'description' => t('Configure Views Calc settings.'),
+    'type' => MENU_NORMAL_ITEM,
+    'weight' => 1,
+    'priority' => 1,
+    'access' => user_access('create views calc'),
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('views_calc_settings'),
+    );
+  $items[] = array(
     'path' => 'admin/settings/views_calc/main',
     'title' => t('Select Views'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 1,
     'priority' => 1,
-    'access' => user_access('create views calc')
+    'access' => user_access('create views calc'),
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('views_calc_settings'),
     );
   $items[] = array('path' => 'admin/settings/views_calc/view',
     'title' => t('Configure Fields'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 5,
     'priority' => 1,
-    'callback' => 'system_site_settings',
-    'callback arguments' => array('views_calc'),
-    'access' => user_access('create views calc')
+    'access' => user_access('create views calc'),
+    'callback' => 'drupal_get_form',
+    'callback arguments' => array('views_calc_settings', 'view'),
     );
   return $items;
 }
@@ -72,7 +75,7 @@ function views_calc_menu($may_cache) {
 /**
  *  Implementation of hook_settings()
  */
-function views_calc_settings() {
+function views_calc_settings($page = '') {
 
   $views = array();
 
@@ -91,7 +94,7 @@ function views_calc_settings() {
     '#value' => t('<p>Calculations will only be performed on the visible page of multi-page views. You may want to adjust your view settings to be sure that the values that should be calculated are visible on the same page. </p>'),
     );
 
-  if (arg(3) == '') {
+  if ($page == '') {
 
     $form['views_calc']['#type'] = 'fieldset';
     $form['views_calc']['#title'] = t('Available Views');
@@ -115,7 +118,7 @@ function views_calc_settings() {
     foreach ($current as $key => $val) {
       if ($val) {
         $view = views_get_view($val);
-        $fields = $view->field; 
+        $fields = (array) $view->field; 
         $options = array('' => '');
         foreach ($fields as $key => $field) {
            $options[$field['queryname']] = $field['label'] ? $field['label'] : $field['queryname'];
@@ -166,7 +169,7 @@ function views_calc_settings() {
       $form['views_calc']['#suffix'] = t('<div class="description">Note: <strong>average (all)</strong> will divide the total by the number of all items, <strong>average</strong> will divide the total by the number of items that have a non-zero value.</div>');
     }
   }
-  return $form;
+  return system_settings_form($form);
       
 }
 
@@ -199,7 +202,7 @@ function views_calc_views_pre_view(&$view, &$items) {
     if ($view_calc && $view->vid == $view_calc && ($view->page_type == 'table' || $view->page_type == 'calc_table') && $items && !$items[0]->num_nodes) {
       
       // make sure the table gets proper spreadsheet-like themeing
-      theme_add_style(drupal_get_path('module', 'views_calc') .'/views_calc.css');
+      drupal_add_css(drupal_get_path('module', 'views_calc') .'/views_calc.css');
       $view->page_type = 'calc_table';
 
       if ($view->use_pager && sizeof($items) == $view->nodes_per_page) {
