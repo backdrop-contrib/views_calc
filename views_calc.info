@@ -1,7 +1,0 @@
-; $Id$
-name = Views Calc
-description = This module will sum, count, and average rows and columns of numeric data in a views table.
-version = "$Name$"
-package = Views
-dependencies = views
-
