@@ -2,7 +2,7 @@
 // $Id$
 /**
  * @file
- * Contains the table style plugin.
+ * Copied from the table style plugin.
  */
 
 /**

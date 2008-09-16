@@ -1,79 +1,47 @@
 <?php
 /**
- *  Implementation of hook_views_tables.
- *
- *  Add calc fields to views field list.
+ * Implementation of hook_views_handlers().
  */
-function views_calc_views_tables() {
-  $tables['views_calc'] = array(
-    'name' => 'node',
-    'join' => array(
-      'left' => array(
-        'table' => 'node',
-        'field' => 'nid'
-      ),
-      'right' => array(
-        'field' => 'nid'
+function views_calc_views_handlers() {
+  return array(
+    'info' => array(
+      'path' => drupal_get_path('module', 'views_calc'),
+    ),
+    'handlers' => array(
+      'views_calc_field_handler' => array(
+        'parent' => 'views_handler_field',
       ),
     ),
   );
-  // insert all available views_calc fields into field list as placeholders
-  // using NULL for table name so views doesn't try to prepend the calc with a tablename
+}
+
+/**
+ *  Implementation of hook_views_data().
+ *
+ *  Add calc fields to views field list.
+ */
+function views_calc_views_data() {
+  $data = array();
   $results = _views_calc_fields();
   while($field = db_fetch_array($results)) {
-    $tables[NULL]['fields']['cid'. $field['cid']] = array(
-      'name'          => t($field['label']),
-      'notafield'     => true,
-      'sortable'      => true,
-      'query_handler' => 'views_calc_query_handler',
-      'handler'       => 'views_calc_field_handler',
-      'cid'           => $field['cid'],
-      'format'        => $field['format'],
-      'custom'        => $field['custom'],
-      );
+    $data['node']['cid'. $field['cid']] = array(
+      'group' => t('Views Calc'),
+      'title' => t($field['label']),
+      'help' =>  $field['calc'],
+      'field' => array(
+        'field' => 'cid'. $field['cid'],
+        'table' => 'node',
+        'handler' => 'views_calc_field_handler',
+        'click sortable' => TRUE,
+        'allow empty' => TRUE,
+        'cid'     => $field['cid'],
+        'format'  => $field['format'],
+        'custom'  => $field['custom'],
+        'calc'  => $field['calc'],
+      ),
+    );
   }
-  return $tables;
-}
-
-/**
- *  Query handler to update query
- *  use handler insert a real field with the calc into the query
- */
-function views_calc_query_handler(&$field, &$fieldinfo, &$query) {
-  $results = _views_calc_fields();
-  while ($calc_field = db_fetch_array($results)) {
-    if ($fieldinfo['cid'] == $calc_field['cid']) {
-      foreach (explode(',', $calc_field['tablelist']) as $table) {
-        $query->ensure_table($table);
-      }
-      $query->add_field("(". $calc_field['calc'] .") AS _cid". $calc_field['cid'], NULL);
-    }
-  }
-}
-
-/**
- *  The field handler.
- *  Used to format the calculation results
- */
-function views_calc_field_handler(&$field, &$fieldinfo, $value, $data) {
-  return _views_calc_format($value, $field['format'], $field['custom']);
-}
-
-function _views_calc_format($value, $format, $custom) {
-  $formats = _views_calc_format_options();
-  $format = $formats[$format];
-  $tmp = explode(':', $format);
-  $function = trim($tmp[0]);
-  $vars     = $tmp[1];
-  if ($function == 'custom') {
-    $tmp = explode(':', $custom);
-    $function = trim($tmp[0]);
-    $vars     = $tmp[1];
-  }
-  if (empty($function) || $function == 'none') {
-    $function = 'check_plain';
-  }
-  return $function($value, $vars);
+  return $data;
 }
 
 /**
