@@ -255,21 +255,9 @@ class views_calc_table extends views_plugin_style {
   }
 
   /**
-   * Render the table style.
-   * 
-   * TODO 
-   * Grouping will have to be done differently to produce summary totals for subgroups.
+   * TODO
+   * figure out what changes are needed so Views field groups will work.
    */
-  function render() {
-    $sets = $this->render_grouping($this->view->result, $this->options['grouping']);
-
-    $output = '';
-    foreach ($sets as $title => $records) {
-      $output .= theme($this->theme_functions(), $this->view, $this->options, $records, $title);
-    }
-    return $output;
-  }
-  
   function pre_render($results) {
     // If there are no calc fields, do nothing.
     if (!$calc_fields = $this->get_calc_fields()) {
@@ -332,6 +320,7 @@ class views_calc_table extends views_plugin_style {
       $this->view->query->add_field(NULL, "'". $calc ."'", "TOTAL_". $calc);
       $this->view->query->add_groupby("TOTAL_". $calc);
     }
+    // TODO This won't work right with relationships, need a fix here.
     if (!empty($this->view->views_calc_nids)) {
       $this->view->query->add_where(NULL, "node.nid IN (%s)", implode(',', $this->view->views_calc_nids));
     }
