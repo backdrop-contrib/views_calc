@@ -183,55 +183,58 @@ function views_calc_fields_form() {
  * A form element for an individual calculated field.
  */
 function views_calc_field_form_item($i, $field, $substitutions) {
-    $form['group'][$i] = array(
-     '#type' => 'fieldset',
-     '#tree' => TRUE,
-     '#title' => t('Field: ') . ($field['label'] ? $field['label'] : t('New')),
-     '#collapsible' => TRUE,
-     '#collapsed'   => FALSE,
-     );
-   $form['group'][$i]['cid'] = array(
-     '#type' => 'hidden',
-     '#value' => intval($field['cid']),
-     );
-   $form['group'][$i]['tablelist'] = array(
-     '#type' => 'hidden',
-     '#value' => $field['tablelist'],
-     );
-   $form['group'][$i]['label'] = array(
-     '#type' => 'textfield',
-     '#title' => t('Label'),
-     '#field_prefix' => 'ViewsCalc: ',
-     '#default_value' => str_replace('ViewsCalc: ', '', $field['label']),
-     '#description' => t('The views field name for this field (i.e. Views Calc: My Calculation).'),
-     );
-   $form['group'][$i]['calc'] = array(
-     '#type' => 'textarea',
-     '#title' => t('Calculation'),
-     '#default_value' => strtr($field['calc'], $substitutions),
-     '#description' => t('<p>The query operation to be performed, using numbers, field substitutions, and '. implode(' ', _views_calc_operators()) .'.</p>'),
-     );
-   $form['group'][$i]['format'] = array(
-     '#type' => 'select',
-     '#title' => t('Format'),
-     '#default_value' => $field['format'],
-     '#options' => drupal_map_assoc(array_keys(_views_calc_format_options())),
-     '#description' => t('The format of the result of this calculation.'),
-     );
-   $form['group'][$i]['custom'] = array(
-     '#type' => 'textfield',
-     '#title' => t('Custom function'),
-     '#default_value' => $field['custom'],
-     '#description' => t('The function to call for a custom format.'),
-     );
-   return $form;
+  if (empty($field)) {
+    $field = array('cid' => 0, 'label' => '', 'tablelist' => '', 'calc' => '', 'format' => '', 'custom' => '');
+  }
+  $form['group'][$i] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+    '#title' => t('Field: ') . !empty($field['label']) ? $field['label'] : t('New'),
+    '#collapsible' => TRUE,
+    '#collapsed'   => FALSE,
+    );
+  $form['group'][$i]['cid'] = array(
+    '#type' => 'hidden',
+    '#value' => intval($field['cid']),
+    );
+  $form['group'][$i]['tablelist'] = array(
+    '#type' => 'hidden',
+    '#value' => $field['tablelist'],
+    );
+  $form['group'][$i]['label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label'),
+    '#field_prefix' => 'ViewsCalc: ',
+    '#default_value' => str_replace('ViewsCalc: ', '', $field['label']),
+    '#description' => t('The views field name for this field (i.e. Views Calc: My Calculation).'),
+    );
+  $form['group'][$i]['calc'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Calculation'),
+    '#default_value' => strtr($field['calc'], $substitutions),
+    '#description' => t('<p>The query operation to be performed, using numbers, field substitutions, and '. implode(' ', _views_calc_operators()) .'.</p>'),
+    );
+  $form['group'][$i]['format'] = array(
+    '#type' => 'select',
+    '#title' => t('Format'),
+    '#default_value' => $field['format'],
+    '#options' => drupal_map_assoc(array_keys(_views_calc_format_options())),
+    '#description' => t('The format of the result of this calculation.'),
+    );
+  $form['group'][$i]['custom'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Custom function'),
+    '#default_value' => $field['custom'],
+    '#description' => t('The function to call for a custom format.'),
+    );
+  return $form;
 }
 
 /**
  *  Validate the views calc settings
  */
-function views_calc_fields_form_validate($form_id, $form_values) {
-  $edit = $form_values;
+function views_calc_fields_form_validate($form, &$form_state) {
+  $edit = $form_state['values'];
   foreach ($edit as $delta => $item) {
     if ($item['calc'] == '' || !is_numeric($delta)) {
       // remove blank fields, don't save them
@@ -268,14 +271,15 @@ function views_calc_fields_form_validate($form_id, $form_values) {
 /**
  *  Save the views calc field settings
  */
-function views_calc_fields_form_submit($form_id, $form_values) {
-  $edit = $form_values;
+function views_calc_fields_form_submit($form, &$form_state) {
+  $edit = $form_state['values'];
   foreach ($edit as $delta => $value) {
     if ($value['calc'] == '' || !is_numeric($delta)) {
       // remove blank fields, don't save them
       unset($form_values[$delta]);
 
-    } else {
+    } 
+    else {
       $tables = array();
       $form_values[$delta]['label']  = $value['label'];
       $form_values[$delta]['format'] = $value['format'];
@@ -347,7 +351,7 @@ function _views_calc_substitutions($base = 'node') {
     // complex additional logic, especially if they are nested
     // several levels deep.
     if (substr($key, 0, 4) != '.cid') {
-      $substitutions[$key] = '%'. str_replace(' ', '', $field);
+      $substitutions[$key] = '%'. str_replace(' ', '', $key);
     }
   }
   return $substitutions;
