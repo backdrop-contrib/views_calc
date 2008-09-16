@@ -29,7 +29,6 @@ function views_calc_help($section, $arg) {
   switch ($section) {
     case 'admin/settings/views_calc':
     case 'admin/settings/views_calc/fields':
-    case 'admin/settings/views_calc/columns':
       return t('<p>Set up calculation fields. Calculation fields will be displayed in the views fields list and can be added to any view.</p>');
     case 'admin/settings/views_calc/settings':
       return t('Put one operator on each line. To avoid the possibility of SQL injection, calculation text will only allow these values, numbers, and field names. Make sure this list includes any text other than field names that should be allowed in the calculation fields.');
@@ -106,7 +105,7 @@ function views_calc_menu() {
     'priority' => 1,
     'page callback' => 'drupal_get_form',
     'page arguments' => array('views_calc_fields_form'),
-    'access arguments' => user_access('create views calc') && user_access('administer views'),
+    'access arguments' => array('create views calc'),
     );
   $items['admin/settings/views_calc/fields'] = array(
     'title' => t('Fields'),
@@ -115,7 +114,7 @@ function views_calc_menu() {
     'priority' => 1,
     'page callback' => 'drupal_get_form',
     'page arguments' => array('views_calc_fields_form'),
-    'access arguments' => user_access('create views calc') && user_access('administer views'),
+    'access arguments' => array('create views calc'),
     );
   $items['admin/settings/views_calc/settings'] = array(
     'title' => t('Settings'),
@@ -124,7 +123,7 @@ function views_calc_menu() {
     'priority' => 1,
     'page callback' => 'drupal_get_form',
     'page arguments' => array('views_calc_settings_form'),
-    'access arguments' => user_access('administer views calc'),
+    'access arguments' => array('administer views calc'),
     );
   return $items;
 }
