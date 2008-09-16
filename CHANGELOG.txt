@@ -1,0 +1,9 @@
+// $Id$
+
+Version 6.1-dev
+=================
+
+- Add schema to install.
+- #309202 Fix substitution list.
+- Add UI to select columns to total.
+- Basic, rough upgrade to Drupal 6 and Views 2.
