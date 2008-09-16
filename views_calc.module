@@ -147,7 +147,8 @@ function views_calc_settings_form() {
   return $form;
 }
 
-function views_calc_settings_form_submit($form_id, $form_values) {
+function views_calc_settings_form_submit($form, &$form_state) {
+  $form_values = $form_state['values'];
   variable_set('views_calc_operators', $form_values['views_calc_operators']);
 }
 
@@ -234,7 +235,8 @@ function views_calc_field_form_item($i, $field, $substitutions) {
  *  Validate the views calc settings
  */
 function views_calc_fields_form_validate($form, &$form_state) {
-  $edit = $form_state['values'];
+  $form_values = $form_state['values'];
+  $edit = $form_values;
   foreach ($edit as $delta => $item) {
     if ($item['calc'] == '' || !is_numeric($delta)) {
       // remove blank fields, don't save them
@@ -272,7 +274,8 @@ function views_calc_fields_form_validate($form, &$form_state) {
  *  Save the views calc field settings
  */
 function views_calc_fields_form_submit($form, &$form_state) {
-  $edit = $form_state['values'];
+  $form_values = $form_state['values'];
+  $edit = $form_values;
   foreach ($edit as $delta => $value) {
     if ($value['calc'] == '' || !is_numeric($delta)) {
       // remove blank fields, don't save them
@@ -313,15 +316,11 @@ function views_calc_fields_form_submit($form, &$form_state) {
   }
   foreach ($form_values as $delta => $value) {
     if ($value['cid'] == 0) {
-      $cid = db_next_id('views_calc_field');
-      $qrytext = "INSERT INTO {views_calc_fields} SET cid = $cid, ";
-      $where   = '';
-    } else {
-      $qrytext = "UPDATE {views_calc_fields} SET ";
-      $where   = " WHERE cid = ". $value['cid'];
+      drupal_write_record('views_calc_fields', $value);
+    } 
+    else {
+      drupal_write_record('views_calc_fields', $value, array('cid'));
     }
-    $qrytext = $qrytext ."label = '%s', format = '%s', custom = '%s', calc = '%s', tablelist = '%s', fieldlist = '%s' ". $where;
-    db_query($qrytext, 'ViewsCalc: '. $value['label'], $value['format'], $value['custom'], $value['calc'], $value['tablelist'], $value['fieldlist']);
   }
   views_invalidate_cache();
   drupal_set_message(t('Views Calc fields were updated.'));
