@@ -45,7 +45,7 @@ if (empty($rows)) {
     <?php foreach ($totals as $type => $row): ?>
       <tr class="view-footer-number">
         <?php foreach ($row as $field => $content): ?>
-          <td class="view-footer-number views-field views-field-<?php print $fields[$field]; ?>">
+          <td class="view-footer views-field views-field-<?php print $fields[$field]; ?> <?php if(is_numeric($content)) print 'view-footer-number'; ?>">
             <?php print $content; ?>
           </td>
         <?php endforeach; ?>

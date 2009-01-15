@@ -185,8 +185,6 @@ class views_calc_table extends views_plugin_style {
         '#options' => $field_names,
         '#default_value' => $column,
       );
-      // TODO, get click sorting working again.
-      /*
       if ($handlers[$field]->click_sortable()) {
         $form['info'][$field]['sortable'] = array(
           '#type' => 'checkbox',
@@ -208,7 +206,6 @@ class views_calc_table extends views_plugin_style {
           '#dependency' => array($id => array($field)),
         );
       }
-      */
       $form['info'][$field]['separator'] = array(
         '#type' => 'textfield',
         '#size' => 10,
@@ -313,12 +310,12 @@ class views_calc_table extends views_plugin_style {
       $query_alias = $field->field_alias;
       if (in_array($field->field, $fields)) {
         // Calculated fields.
-        $this->view->query->add_field(NULL, $calc .'('. $query_field .')', $field->field);
+        $this->view->query->add_field(NULL, $calc .'('. $query_field .')', $query_alias);
         $this->view->query->ensure_table($field->table);
       }
       else {
         // Empty fields that have no calculations.
-        $this->view->query->add_field(NULL, "MAX('')", $field->field);
+        $this->view->query->add_field(NULL, "MAX('')", $query_alias);
       }
       // Add a dummy field for the groupby.
       $this->view->query->add_field(NULL, "MAX('". $calc ."')", "TOTAL_". $calc);

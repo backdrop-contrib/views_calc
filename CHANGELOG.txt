@@ -3,7 +3,6 @@
 Version 6.1-dev
 =================
 
-- Start to get this working again in latest Views code, click sorting is not yet working.
 - Add schema to install.
 - #309202 Fix substitution list.
 - Add UI to select columns to total.

@@ -153,16 +153,17 @@ function template_preprocess_views_calc_table(&$vars) {
   $vars['totals'] = array();
   $added_label = array();
   foreach ($columns as $field => $column) {
+    $field_alias = $fields[$field]->field_alias;
     if ($field == $column && empty($fields[$field]->options['exclude'])) {
       foreach ($totals as $num => $row) {
         foreach ($row as $item) {
-          if (in_array($item, array('SUM', 'COUNT', 'MIN', 'MAX'))) {
+          if (in_array($item, array_keys(_views_calc_calc_options()))) {
             $type = $item;
             break;
           }
         }
-        if (!empty($row->$field) || $row->$field === 0) {
-          $vars['totals'][$type][$column] =  $row->$field;
+        if (!empty($row->$field_alias) || $row->$field_alias === 0) {
+          $vars['totals'][$type][$column] =  $row->$field_alias;
         }
         else {
           // Add the calc type label into the first empty column.
