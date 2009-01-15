@@ -268,7 +268,7 @@ class views_calc_table extends views_plugin_style {
       return;
     }
     
-    $nodes = array();
+    $nids = array();
     foreach ($this->view->result as $delta => $value) {
       $nids[] = $value->nid;
     }
@@ -310,7 +310,9 @@ class views_calc_table extends views_plugin_style {
       $query_alias = $field->field_alias;
       if (in_array($field->field, $fields)) {
         // Calculated fields.
-        $this->view->query->add_field(NULL, $calc .'('. $query_field .')', $query_alias);
+        // TODO figure out what precision we really want here. Currently
+        // decimal fields can't go over 2 places, so using that initially.
+        $this->view->query->add_field(NULL, "ROUND($calc($query_field), 2)", $query_alias);
         //$this->view->query->ensure_table($field->table);
         $this->view->query->add_table($field->table, NULL, NULL, $field->table);
       }
