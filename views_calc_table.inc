@@ -185,6 +185,8 @@ class views_calc_table extends views_plugin_style {
         '#options' => $field_names,
         '#default_value' => $column,
       );
+      // TODO, get click sorting working again.
+      /*
       if ($handlers[$field]->click_sortable()) {
         $form['info'][$field]['sortable'] = array(
           '#type' => 'checkbox',
@@ -206,6 +208,7 @@ class views_calc_table extends views_plugin_style {
           '#dependency' => array($id => array($field)),
         );
       }
+      */
       $form['info'][$field]['separator'] = array(
         '#type' => 'textfield',
         '#size' => 10,
@@ -301,12 +304,13 @@ class views_calc_table extends views_plugin_style {
     // Create summary rows.
     $calc = $this->view->views_calc_calculation;
     $fields = $calc_fields[$calc];
+    
+    // Empty out any fields that have been added to the query,
+    // we don't need them for the summary totals.
+    $this->view->query->fields = array();
     foreach ($this->view->field as $field) {
       $query_field = $field->table .'.'. $field->field;
       $query_alias = $field->field_alias;
-      if (isset($this->view->query->fields[$field->field_alias])) {
-        unset($this->view->query->fields[$field->field_alias]);
-      }
       if (in_array($field->field, $fields)) {
         // Calculated fields.
         $this->view->query->add_field(NULL, $calc .'('. $query_field .')', $field->field);
@@ -314,11 +318,10 @@ class views_calc_table extends views_plugin_style {
       }
       else {
         // Empty fields that have no calculations.
-        $this->view->query->add_field(NULL, "''", $field->field);
+        $this->view->query->add_field(NULL, "MAX('')", $field->field);
       }
       // Add a dummy field for the groupby.
-      $this->view->query->add_field(NULL, "'". $calc ."'", "TOTAL_". $calc);
-      $this->view->query->add_groupby("TOTAL_". $calc);
+      $this->view->query->add_field(NULL, "MAX('". $calc ."')", "TOTAL_". $calc);
     }
     // TODO This won't work right with relationships, need a fix here.
     if (!empty($this->view->views_calc_nids)) {

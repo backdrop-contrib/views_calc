@@ -42,7 +42,7 @@ if (empty($rows)) {
     <?php endforeach; ?>
   </tbody>
   <tfoot>
-    <?php foreach ($totals as $count => $row): ?>
+    <?php foreach ($totals as $type => $row): ?>
       <tr class="view-footer-number">
         <?php foreach ($row as $field => $content): ?>
           <td class="view-footer-number views-field views-field-<?php print $fields[$field]; ?>">

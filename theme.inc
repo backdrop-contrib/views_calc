@@ -151,14 +151,32 @@ function template_preprocess_views_calc_table(&$vars) {
 
   // Add totals.
   $vars['totals'] = array();
+  $added_label = array();
   foreach ($columns as $field => $column) {
-    if ($field == $column && empty($fields[$field]->options['exclude']) && $options['info'][$field]['has_calc']) {
+    if ($field == $column && empty($fields[$field]->options['exclude'])) {
       foreach ($totals as $num => $row) {
-        $vars['totals'][$num][$column] = $row->$field;
+        foreach ($row as $item) {
+          if (in_array($item, array('SUM', 'COUNT', 'MIN', 'MAX'))) {
+            $type = $item;
+            break;
+          }
+        }
+        if (!empty($row->$field) || $row->$field === 0) {
+          $vars['totals'][$type][$column] =  $row->$field;
+        }
+        else {
+          // Add the calc type label into the first empty column.
+          if (empty($added_label[$type])) {
+            $vars['totals'][$type][$column] = $type;
+            $added_label[$type] = TRUE;
+          }
+          else {
+            $vars['totals'][$type][$column] = '';
+          }
+        }
       }
     }
   }
-  
   $vars['class'] = 'views-table';
   if (!empty($options['sticky'])) {
     drupal_add_js('misc/tableheader.js');
