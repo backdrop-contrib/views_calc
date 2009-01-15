@@ -311,7 +311,8 @@ class views_calc_table extends views_plugin_style {
       if (in_array($field->field, $fields)) {
         // Calculated fields.
         $this->view->query->add_field(NULL, $calc .'('. $query_field .')', $query_alias);
-        $this->view->query->ensure_table($field->table);
+        //$this->view->query->ensure_table($field->table);
+        $this->view->query->add_table($field->table, NULL, NULL, $field->table);
       }
       else {
         // Empty fields that have no calculations.
