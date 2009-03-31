@@ -171,7 +171,7 @@ class views_calc_plugin_style_chart extends views_plugin_style {
     );
 
     // Use the view title as the chart title.
-    $chart['#title'] = $this->view->get_title() . (!empty($legend) ? '|'. urlencode($legend) : '');
+    $chart['#title'] = $this->view->get_title();
     
     // Insert series into the chart array.
     foreach ($data as $series) {
