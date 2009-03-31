@@ -149,8 +149,9 @@ class views_calc_plugin_style_chart extends views_plugin_style {
         foreach ($this->view->field as $key => $field) {
           if ($key == $this->options['aggregation_field']) {
             $legend_field = array_key_exists($calc, $this->view->field) ? $this->view->field[$calc] : NULL;
+            $legend = !empty($legend_field->options['label']) ? $legend_field->options['label'] : NULL;
             if ($this->options['show_legend']) {
-              $data[$calc]['#legend'] = !empty($legend_field->options['label']) ? $legend_field->options['label'] : NULL;
+              $data[$calc]['#legend'] = $legend;
             }
             $value['#label'] = strip_tags(theme_views_view_field($this->view, $this->view->field[$key], $row)) .': '. $row->$calc;
             $value['#value'] = $row->$calc;
@@ -170,7 +171,7 @@ class views_calc_plugin_style_chart extends views_plugin_style {
     );
 
     // Use the view title as the chart title.
-    $chart['#title'] = $this->view->get_title();
+    $chart['#title'] = $this->view->get_title() . (!empty($legend) ? '|'. urlencode($legend) : '');
     
     // Insert series into the chart array.
     foreach ($data as $series) {
