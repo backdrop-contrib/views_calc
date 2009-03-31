@@ -68,7 +68,7 @@ function views_calc_views_plugins() {
         'title' => t('Views Calc Table'),
         'help' => t('Creates a table with column calculations.'),
         'handler' => 'views_calc_table',
-        'path' => "$path",
+        'path' => $path,
         'parent' => 'parent',
         'theme' => 'views_calc_table',
         'theme file' => 'theme.inc',
@@ -79,7 +79,21 @@ function views_calc_views_plugins() {
         'type' => 'normal',
         'even empty' => FALSE,
       ),
-    ),
+    )
   );
+  if (module_exists('charts')) {
+    $data['style']['views_calc_chart'] = array(
+      'path'            => $path,
+      'title'           => t('Chart - aggregated'),
+      //'theme'         => 'views_view_chart',
+      'help'            => t('Displays aggregated totals in in a chart.'),
+      'handler'         => 'views_calc_plugin_style_chart',
+      'uses row plugin' => FALSE,
+      'uses fields'     => TRUE,
+      'uses options'    => TRUE,
+      'parent'          => 'parent',
+      'type'            => 'normal',
+    );
+  }
   return $data;
 }
