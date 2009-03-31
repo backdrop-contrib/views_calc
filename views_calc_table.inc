@@ -64,8 +64,10 @@ class views_calc_table extends views_plugin_style {
 
   /**
    * Normalize a list of columns based upon the fields that are
-   * available.
-   *
+   * available. This compares the fields stored in the style handler
+   * to the list of fields actually in the view, removing fields that
+   * have been removed and adding new fields in their own column.   
+   * 
    * - Each field must be in a column.
    * - Each column must be based upon a field, and that field
    *   is somewhere in the column.
@@ -118,6 +120,7 @@ class views_calc_table extends views_plugin_style {
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
+    
     $handlers = $this->display->handler->get_handlers('field');
     if (empty($handlers)) {
       $form['error_markup'] = array(
@@ -167,7 +170,7 @@ class views_calc_table extends views_plugin_style {
 
     if (isset($this->options['default'])) {
       $default = $this->options['default'];
-      if (!isset($fields[$default])) {
+      if (!isset($columns[$default])) {
         $default = -1;
       }
     }
@@ -275,14 +278,15 @@ class views_calc_table extends views_plugin_style {
     // Add summary rows to the results.
     $this->view->totals = array();
     foreach ($calc_fields as $calc => $field) {
-      $summary_view = views_get_view($this->view->name);
-      $display = $summary_view->add_display($this->view->current_display);
-      $summary_view->set_display($display);
-      $summary_view->views_calc_calculation = $calc;
-      $summary_view->views_calc_nids = $nids;
-      $summary_view->is_cacheable = FALSE;
-      $summary_view->execute_display($display, $this->view->args);
-      $this->view->totals[] = array_shift($summary_view->result);
+      if ($summary_view = views_get_view($this->view->name)) {
+        $display = $summary_view->add_display($this->view->current_display);
+        $summary_view->set_display($display);
+        $summary_view->views_calc_calculation = $calc;
+        $summary_view->views_calc_nids = $nids;
+        $summary_view->is_cacheable = FALSE;
+        $summary_view->execute_display($display, $this->view->args);
+        $this->view->totals[] = array_shift($summary_view->result);
+      }
     }
   }
   
