@@ -164,7 +164,16 @@ function template_preprocess_views_calc_table(&$vars) {
           }
         }
         if (!empty($row->$field_alias) || (isset($row->$field_alias) && $row->$field_alias === 0)) {
-          $vars['totals'][$type][$column] =  $row->$field_alias;
+    
+          // COUNT is always a numeric value, no matter what kind of field it is.
+          if ($type == 'COUNT') {
+            $vars['totals'][$type][$column] =  $row->$field_alias;
+          }
+          // Calculations other than COUNT should run the value through the field's theme.
+          // This will allow dates and numeric values to apply the right formatting to the result.
+          else {
+            $vars['totals'][$type][$column] =  $fields[$field]->theme($row);
+          }
         }
         elseif (!empty($type)) {
           // Add the calc type label into the first empty column.
