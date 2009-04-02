@@ -3,6 +3,7 @@
 Version 6.1-dev
 =================
 
+- Change execute_display() to execute() to avoid breaking exposed filters.
 - Make sure totals are passed through field themes so they get the right formatting.
 - Add charts support to create chart out of aggregated data.
 - Add schema to install.

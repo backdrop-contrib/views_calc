@@ -284,7 +284,7 @@ class views_calc_table extends views_plugin_style {
         $summary_view->views_calc_calculation = $calc;
         $summary_view->views_calc_nids = $nids;
         $summary_view->is_cacheable = FALSE;
-        $summary_view->execute_display($display, $this->view->args);
+        $summary_view->execute($display, $this->view->args);
         $this->view->totals[] = array_shift($summary_view->result);
       }
     }
