@@ -281,10 +281,11 @@ class views_calc_table extends views_plugin_style {
       if ($summary_view = views_get_view($this->view->name)) {
         $display = $summary_view->add_display($this->view->current_display);
         $summary_view->set_display($display);
+        $summary_view->set_arguments($this->view->args);
         $summary_view->views_calc_calculation = $calc;
         $summary_view->views_calc_nids = $nids;
         $summary_view->is_cacheable = FALSE;
-        $summary_view->execute($display, $this->view->args);
+        $summary_view->execute();
         $this->view->totals[] = array_shift($summary_view->result);
       }
     }
