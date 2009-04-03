@@ -189,10 +189,7 @@ function template_preprocess_views_calc_table(&$vars) {
             // when both are provided.
             if (empty($added_label[$type])) {
               if ($process == 'sub_totals') {
-                $label = t("!Calculation Page Total", array("!Calculation" => $type));
-              }
-              elseif (count($vars['sub_totals'])) {
-                $label = t("!Calculation Grand Total", array("!Calculation" => $type));
+                $label = t("!Calculation Page", array("!Calculation" => $type));
               }
               else {
                 $label = t("!Calculation", array("!Calculation" => $type));

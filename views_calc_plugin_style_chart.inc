@@ -66,7 +66,7 @@ class views_calc_plugin_style_chart extends views_plugin_style {
     $form['show_legend'] = array(
       '#type'          => 'checkbox',
       '#title'         => t('Show legend'),
-      '#default_value' => 1,
+      '#default_value' => $this->options['show_legend'],
       '#description'   => t('Display legend next to the chart.'),
     );
       
@@ -101,6 +101,10 @@ class views_calc_plugin_style_chart extends views_plugin_style {
       '#description' => t('Decimal points to use in computed values.'),
       );   
   }
+  
+  function options_submit($form, &$form_state) {
+    //$form_state['values']['options']['show_legend'] = array_filter($form_state['values']['options']['show_legend']);
+  }  
 
   function calc_options() {
     return array(
