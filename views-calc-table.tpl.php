@@ -24,7 +24,7 @@ if (empty($rows)) {
   <thead>
     <tr>
       <?php foreach ($header as $field => $label): ?>
-        <th class="views-field views-field-<?php print $fields[$field]; ?>">
+        <th class="views-field views-field-<?php print $fields[$field]; ?> <?php print $options['info'][$field]['justification'] ?>">
           <?php print $label; ?>
         </th>
       <?php endforeach; ?>
@@ -34,7 +34,7 @@ if (empty($rows)) {
     <?php foreach ($rows as $count => $row): ?>
       <tr class="<?php print ($count % 2 == 0) ? 'even' : 'odd';?>">
         <?php foreach ($row as $field => $content): ?>
-          <td class="views-field views-field-<?php print $fields[$field]; ?> <?php if(is_numeric($content)) print 'view-field-number'; ?>">
+          <td class="views-field views-field-<?php print $fields[$field]; ?>  <?php print $options['info'][$field]['justification'] ?>">
             <?php print $content; ?>
           </td>
         <?php endforeach; ?>
@@ -42,10 +42,19 @@ if (empty($rows)) {
     <?php endforeach; ?>
   </tbody>
   <tfoot>
+    <?php foreach ($sub_totals as $type => $row): ?>
+      <tr class="view-subfooter-number">
+        <?php foreach ($row as $field => $content): ?>
+          <td class="view-subfooter views-field views-field-<?php print $fields[$field]; ?>  <?php print $options['info'][$field]['justification'] ?>">
+            <?php print $content; ?>
+          </td>
+        <?php endforeach; ?>
+      </tr>
+    <?php endforeach; ?>
     <?php foreach ($totals as $type => $row): ?>
       <tr class="view-footer-number">
         <?php foreach ($row as $field => $content): ?>
-          <td class="view-footer views-field views-field-<?php print $fields[$field]; ?> <?php if(is_numeric($content)) print 'view-footer-number'; ?>">
+          <td class="view-footer views-field views-field-<?php print $fields[$field]; ?>  <?php print $options['info'][$field]['justification'] ?>">
             <?php print $content; ?>
           </td>
         <?php endforeach; ?>

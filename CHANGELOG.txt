@@ -3,6 +3,9 @@
 Version 6.1-dev
 =================
 
+- Simplify the code by making this an extension of the Views table style instead of the base style.
+- Add sub-totals for paged views that show both the page and the grand totals.
+- Add 'justification' setting to right, left, or center-justify values.
 - Change execute_display() to execute() to avoid breaking exposed filters.
 - Make sure totals are passed through field themes so they get the right formatting.
 - Add charts support to create chart out of aggregated data.

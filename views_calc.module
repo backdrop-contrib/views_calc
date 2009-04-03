@@ -56,7 +56,7 @@ function _views_calc_operators() {
  *  Column calculation alternatives
  */
 function _views_calc_calc_options() {
-  return array('SUM' => 'Sum', 'COUNT' => 'Count', 'AVG' => 'Average', 'MIN' => 'Minimum', 'MAX' => 'Maximum');
+  return array('COUNT' => 'Count', 'SUM' => 'Sum', 'AVG' => 'Average', 'MIN' => 'Minimum', 'MAX' => 'Maximum');
 }
 
 /**
@@ -87,11 +87,6 @@ function _views_calc_format_options() {
  */
 function views_calc_perm() {
   return array('create views calc', 'administer views calc');
-}
-
-function views_calc_init() {
-  // make sure the table gets proper spreadsheet-like themeing
-  drupal_add_css(drupal_get_path('module', 'views_calc') .'/views_calc.css');
 }
 
 function views_calc_menu() {

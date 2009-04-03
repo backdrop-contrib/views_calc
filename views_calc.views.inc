@@ -55,21 +55,13 @@ function views_calc_views_plugins() {
   $data = array(
     'module' => 'views_calc', // This just tells our themes are elsewhere.
     'style' => array(
-      'parent' => array(
-        // this isn't really a display but is necessary so the file can
-        // be included.
-        'no ui' => TRUE,
-        'handler' => 'views_plugin_style',
-        'path' => "$views_path/plugins",
-        'parent' => '',
-      ),
       // Style plugin for the navigation.
       'views_calc' => array(
         'title' => t('Views Calc Table'),
         'help' => t('Creates a table with column calculations.'),
         'handler' => 'views_calc_table',
         'path' => $path,
-        'parent' => 'parent',
+        'parent' => 'table',
         'theme' => 'views_calc_table',
         'theme file' => 'theme.inc',
         'theme path' => "$path",
