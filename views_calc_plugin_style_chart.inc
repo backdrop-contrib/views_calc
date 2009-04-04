@@ -101,10 +101,6 @@ class views_calc_plugin_style_chart extends views_plugin_style {
       '#description' => t('Decimal points to use in computed values.'),
       );   
   }
-  
-  function options_submit($form, &$form_state) {
-    //$form_state['values']['options']['show_legend'] = array_filter($form_state['values']['options']['show_legend']);
-  }  
 
   function calc_options() {
     return array(
