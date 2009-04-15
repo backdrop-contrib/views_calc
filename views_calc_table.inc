@@ -179,7 +179,7 @@ class views_calc_table extends views_plugin_style_table {
     $calc_fields = $this->get_calc_fields();
     $calc = $this->view->views_calc_calculation;
     $fields = $calc_fields[$calc];
-
+    
     // Empty out any fields that have been added to the query,
     // we don't need them for the summary totals.
     $this->view->query->fields = array();
@@ -192,7 +192,7 @@ class views_calc_table extends views_plugin_style_table {
       $query_field = $field->table .'.'. $field->field;
       $query_alias = $field->field_alias;
       $this->view->query->add_table($field->table, NULL, NULL, $field->table);
-      if (in_array($field->field, $fields)) {
+      if (!empty($fields) && in_array($field->field, $fields)) {
         // Calculated fields.
         $this->view->query->add_field(NULL, "$calc($query_field)", $query_alias);
       }
@@ -210,13 +210,16 @@ class views_calc_table extends views_plugin_style_table {
     $handler  = $this->view->style_plugin;
     $fields   = $this->view->field;
     $columns  = $handler->sanitize_columns($options['columns'], $fields);
+    $calcs = array_keys(_views_calc_calc_options());
     
     $calc_fields = array();
     foreach ($columns as $field => $column) {
       if ($field == $column && empty($fields[$field]->options['exclude'])) {
         if ($options['info'][$field]['has_calc']) {
-          foreach ($options['info'][$field]['calc'] as $calc) {
-            $calc_fields[$calc][] = $field;
+          foreach ($calcs as $calc) {
+            if (isset($this->options['info'][$field]['calc'])) {
+              $calc_fields[$calc][] = $field;
+            }
           }
         }
       }
