@@ -184,7 +184,7 @@ class views_calc_plugin_style_chart extends views_plugin_style {
   
   function query() {
     parent::query();
-    
+        
     // Clear the fields out, we'll replace them with calculated values.
     $this->view->query->clear_fields();
     // Clear out any sorting, it can create unexpected results

@@ -3,6 +3,7 @@
 Version 6.1-dev
 =================
 
+- #368221 Make sure you can do column calculations on a custom calculated field.
 - Make sure preview picks up recent, unsaved, changes in calculation options.
 - Simplify the code by making this an extension of the Views table style instead of the base style.
 - Add sub-totals for paged views that show both the page and the grand totals.

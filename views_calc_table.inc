@@ -63,7 +63,7 @@ class views_calc_table extends views_plugin_style_table {
    */
   function pre_render($results) {
     parent::pre_render($results);
-        
+       
     // If there are no calc fields, do nothing.
     if (!$calc_fields = $this->get_calc_fields()) {
       return;
@@ -119,7 +119,7 @@ class views_calc_table extends views_plugin_style_table {
 
   function query() {
     parent::query();
-        
+    
     // If we're not getting a summary row, do nothing.
     if (empty($this->view->views_calc_calculation)) {
       return;
@@ -145,12 +145,12 @@ class views_calc_table extends views_plugin_style_table {
     $calc_fields = $this->get_calc_fields();
     $calc = $this->view->views_calc_calculation;
     $fields = $calc_fields[$calc];
-  
+    
     // Empty out any fields that have been added to the query,
     // we don't need them for the summary totals.
     $this->view->query->fields = array();
     foreach ($this->view->field as $field) {
-      $query_field = $field->table .'.'. $field->field;
+      $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table .'.'. $field->field;
       $query_alias = $field->field_alias;
       if (in_array($field->field, $fields)) {
         // Calculated fields.
@@ -189,7 +189,7 @@ class views_calc_table extends views_plugin_style_table {
     $this->view->query->groupby = array();
 
     foreach ($this->view->field as $field) {
-      $query_field = $field->table .'.'. $field->field;
+      $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table .'.'. $field->field;
       $query_alias = $field->field_alias;
       $this->view->query->add_table($field->table, NULL, NULL, $field->table);
       if (!empty($fields) && in_array($field->field, $fields)) {

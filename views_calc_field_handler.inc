@@ -66,11 +66,17 @@ class views_calc_field_handler extends views_handler_field {
     }    
   }
   
+  function pre_query() {
+    $this->field_alias = "cid{$this->definition['cid']}";
+    parent::pre_query();
+  }
+  
   /**
    * Use the requested format function to render the raw alias value.
    */
   function render($values) {
     $field_alias = "cid{$this->definition['cid']}";
+    
     $value = $values->$field_alias;
     $formats = _views_calc_format_options();
     $format = $formats[$this->definition['format']];
