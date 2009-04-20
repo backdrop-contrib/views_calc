@@ -153,7 +153,7 @@ class views_calc_plugin_style_chart extends views_plugin_style {
             if ($this->options['show_legend']) {
               $data[$calc]['#legend'] = $legend;
             }
-            $value['#label'] = strip_tags(theme_views_view_field($this->view, $this->view->field[$key], $row)) .': '. $row->$calc;
+            $value['#label'] = strip_tags(theme_views_view_field($this->view, $this->view->field[$key], $row)); // .': '. $row->$calc;
             $value['#value'] = $row->$calc;
             $data[$calc][] = $value;
           }
@@ -196,14 +196,19 @@ class views_calc_plugin_style_chart extends views_plugin_style {
     // another aggregation in for this field.
             
     foreach ($this->view->field as $field) {
-      $query_field = $field->table .'.'. $field->field;
+      $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table .'.'. $field->field;
       $query_alias = $field->field_alias;
       
       // Add the aggregation.
       if ($field->field == $this->options['aggregation_field']) {
-        $this->view->query->add_groupby($query_field);
         $this->view->query->add_orderby(NULL, NULL, 'asc', $query_alias);
-        $this->view->query->add_field($field->table, $field->field, NULL, array('aggregate' => TRUE));
+        $this->view->query->add_groupby($query_field);
+        if (substr($field->field, 0, 3) == 'cid') {
+          $this->view->query->add_field(NULL, $query_field, $field->field, array('aggregate' => TRUE));
+        }
+        else {
+          $this->view->query->add_field($field->table, $field->field, NULL, array('aggregate' => TRUE));
+        }
       }
       // Add computed values.
       if (in_array($field->field, $this->calc_fields())) {
