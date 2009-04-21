@@ -58,7 +58,7 @@ class views_calc_field_handler extends views_handler_field {
     while ($calc_field = db_fetch_array($results)) {
       if ($this->definition['cid'] == $calc_field['cid']) {
         foreach (explode(',', $calc_field['tablelist']) as $table) {
-          $this->view->query->ensure_table($table);
+          $this->view->query->add_table($table);
         }
         $this->view->query->add_field(NULL, "({$calc_field['calc']})", "cid". $calc_field['cid']);
         return;
