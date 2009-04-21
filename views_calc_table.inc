@@ -11,7 +11,14 @@
  * @ingroup views_style_plugins
  */
 class views_calc_table extends views_plugin_style_table {
-  
+ 
+  function option_definition() {
+    $options = parent::option_definition();
+
+    $options['detailed_values'] = array('default' => 0);
+    return $options;
+  }
+   
   /**
    * Render the given style.
    */
@@ -19,9 +26,17 @@ class views_calc_table extends views_plugin_style_table {
     parent::options_form($form, $form_state);
     $form['#theme'] = 'views_calc_ui_table';
 
+    $form['detailed_values'] = array(
+      '#title' => t('Show details'),
+      '#type' => 'select',
+      '#options' => array(0 => t('Yes'), 1 => t('No')),
+      '#default_value' => $this->options['detailed_values'],
+      '#description' => t("Select 'Yes' to show detailed values followed by column calculations, 'No' to surpress details and show only calculated column totals."),
+    );
+    
     $handlers = $this->display->handler->get_handlers('field');
     $columns = $this->sanitize_columns($this->options['columns']);
-    
+        
     foreach ($columns as $field => $column) {
       $safe = str_replace(array('][', '_', ' '), '-', $field);
       $id = 'edit-style-options-columns-' . $safe;

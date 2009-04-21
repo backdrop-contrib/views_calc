@@ -86,6 +86,7 @@ function template_preprocess_views_calc_table(&$vars) {
   $options  = $view->style_plugin->options;
   $handler  = $view->style_plugin;
   $vars['options'] = $options;
+  $hide_details = $options['detailed_values'];
   
   $fields   = &$view->field;
   $columns  = $handler->sanitize_columns($options['columns'], $fields);
@@ -140,6 +141,10 @@ function template_preprocess_views_calc_table(&$vars) {
         if (!isset($field_output) && isset($vars['rows'][$num][$column])) {
           continue;
         }
+        
+        if ($hide_details) {
+          continue;
+        }
 
         // Place the field into the column, along with an optional separator.
         if (isset($vars['rows'][$num][$column])) {
@@ -189,10 +194,10 @@ function template_preprocess_views_calc_table(&$vars) {
             // when both are provided.
             if (empty($added_label[$type])) {
               if ($process == 'sub_totals') {
-                $label = t("!Calculation Page", array("!Calculation" => $type));
+                $label = t("Page !Calculation", array("!Calculation" => $type));
               }
               else {
-                $label = t("!Calculation", array("!Calculation" => $type));
+                $label = t("Total !Calculation", array("!Calculation" => $type));
               }
               $vars[$process][$type][$column] = $label;
               $added_label[$type] = TRUE;
@@ -211,6 +216,7 @@ function template_preprocess_views_calc_table(&$vars) {
     drupal_add_js('misc/tableheader.js');
     $vars['class'] .= " sticky-enabled";
   }
+  
   return;
      
 }

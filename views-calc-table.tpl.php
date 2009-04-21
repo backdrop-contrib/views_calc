@@ -13,7 +13,7 @@
  *   keyed by field ID.
  * @ingroup views_templates
  */
-if (empty($rows)) {
+if (empty($rows) && empty($totals)) {
   return;
 }
 ?>
