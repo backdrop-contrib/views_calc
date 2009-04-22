@@ -87,7 +87,7 @@ class views_calc_table extends views_plugin_style_table {
     if (!empty($this->view->views_calc_calculation)) {
       return;
     }
-    
+   
     $this->view->totals = array();
     $this->view->sub_totals = array();
       
@@ -232,7 +232,7 @@ class views_calc_table extends views_plugin_style_table {
       if ($field == $column && empty($fields[$field]->options['exclude'])) {
         if ($options['info'][$field]['has_calc']) {
           foreach ($calcs as $calc) {
-            if (isset($this->options['info'][$field]['calc'])) {
+            if (isset($this->options['info'][$field]['calc'][$calc])) {
               $calc_fields[$calc][] = $field;
             }
           }
