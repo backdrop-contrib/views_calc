@@ -3,6 +3,12 @@
 Version 6.1-dev
 =================
 
+- #442874 Don't print subtotal when there is only one page.
+- #441722 Make sure only the requested calculations are displayed.
+
+Version 6.1-1
+=================
+
 - Add option to either hide or show the detailed rows along with calculated totals.
 - #406686 Make sure tables for computed fields are not removed from the query.
 - #368221 Make sure you can do column calculations on a custom calculated field.

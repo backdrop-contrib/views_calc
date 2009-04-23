@@ -162,7 +162,14 @@ function template_preprocess_views_calc_table(&$vars) {
   }
   
   // Add totals.
-  foreach (array('sub_totals', 'totals') as $process) {
+  if($view->total_rows > $view->pager['items_per_page']) {
+    $process_available = array('sub_totals', 'totals');  
+  }
+  else{
+    $process_available = array('totals');
+    $vars['sub_totals'] = array(); //if don't set, error in template
+  }
+  foreach ($process_available as $process) {
     $vars[$process] = array();
     $added_label = array();
     foreach ($columns as $field => $column) {
