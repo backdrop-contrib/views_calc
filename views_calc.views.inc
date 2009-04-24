@@ -76,7 +76,7 @@ function views_calc_views_plugins() {
   if (module_exists('charts')) {
     $data['style']['views_calc_chart'] = array(
       'path'            => $path,
-      'title'           => t('Chart - aggregated'),
+      'title'           => t('Views Calc Chart'),
       //'theme'         => 'views_view_chart',
       'help'            => t('Displays aggregated totals in in a chart.'),
       'handler'         => 'views_calc_plugin_style_chart',
