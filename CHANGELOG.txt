@@ -3,6 +3,7 @@
 Version 6.1-dev
 =================
 
+- #464568 Remove charts integration now that Charts module does it.
 - #442874 Don't print subtotal when there is only one page.
 - #441722 Make sure only the requested calculations are displayed.
 
