@@ -3,8 +3,6 @@
 Version 6.1-dev
 =================
 
-- #353084 Enable custom Views Calc fields for any base table, not just node.
-
 Version 6.1-3
 =================
 

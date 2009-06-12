@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * This module will allow you to add calculated fields to views tables
@@ -114,12 +113,29 @@ function views_calc_menu() {
   $items['admin/settings/views_calc/settings'] = array(
     'title' => t('Settings'),
     'type' => MENU_LOCAL_TASK,
-    'weight' => 10,
+    'weight' => 6,
     'priority' => 1,
     'page callback' => 'drupal_get_form',
     'page arguments' => array('views_calc_settings_form'),
     'access arguments' => array('administer views calc'),
     );
+  $items['admin/settings/views_calc/export'] = array(
+    'title' => 'Export fields',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('views_calc_export_form'),
+    'access arguments' => array('create views calc'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 7,
+  );
+  $items['admin/settings/views_calc/import'] = array(
+    'title' => 'Import fields',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('views_calc_import_form'),
+    'access arguments' => array('create views calc'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 8,
+  );
+    
   return $items;
 }
 
@@ -262,7 +278,8 @@ function views_calc_fields_form_validate($form, &$form_state) {
     if ($item['calc'] == '' || !is_numeric($delta)) {
       // remove blank fields, don't save them
       unset($form_values[$delta]);
-    } else {
+    } 
+    else {
       // Remove all valid values from calc, if anything is left over, it is invalid.
 
       // First, remove all field names.
@@ -394,4 +411,79 @@ function _views_calc_replacements() {
   $operators     = array_filter(_views_calc_operators(), 'trim');
   $numbers       = range(0, 9);
   return array_merge($operators, $numbers);
+}
+
+
+/**
+ * Field export form.
+ */
+function views_calc_export_form() {
+  
+  $fields = _views_calc_fields();
+  $string = '';
+  while ($field = db_fetch_array($fields)) {
+    $string .= "\$fields[] = ". var_export((array) $field, TRUE) .";\n";
+  }
+    
+  $form['#prefix'] = t('This form will export Views Calc custom fields.');
+  $form['macro'] = array(
+    '#type' => 'textarea',
+    '#rows' => 20,
+    '#title' => t('Export data'),
+    '#default_value' => $string,
+    '#description' => t('This is an export of the custom Views Calc fields. Paste this text into a Views Calc import box to import these fields into another installation. This will only work if the other installation uses the same base tables required by these fields.'),
+  );
+  return $form;
+}
+
+/**
+ * Field import form.
+ */
+function views_calc_import_form(&$form_state, $type_name = '') {
+  $form['#prefix'] = t('This form will import Views Calc custom fields.');
+  $form['macro'] = array(
+    '#type' => 'textarea',
+    '#rows' => 20,
+    '#title' => t('Import data'),
+    '#required' => TRUE,
+    '#description' => t('Paste the text created by a Views Calc export into this field.'),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Import'),
+  );
+  // Read in a file if there is one and set it as the default macro value.
+  if (isset($_REQUEST['macro_file']) && $file = file_get_contents($_REQUEST['macro_file'])) {
+    $form['macro']['#default_value'] = $file;
+    if (isset($_REQUEST['type_name'])) {
+      $form['type_name']['#default_value'] = $_REQUEST['type_name'];
+    }
+    $form['#prefix'] .= '<p class="error">'. t('A file has been pre-loaded for import.') .'</p>';
+  }
+  return $form;
+}
+
+/**
+ *  Submit handler for import form.
+ */
+function views_calc_import_form_submit($form, &$form_state) {
+  $form_values = $form_state['values'];
+  $fields = NULL;
+  
+  // Use '@' to suppress errors about undefined constants in the macro.
+  @eval($form_values['macro']);
+  
+  if (empty($fields) || !is_array($fields)) {
+    return;
+  }
+  
+  foreach ($fields as $delta => $field) {
+    // Don't over-write existing fields, create new ones.
+    $fields[$delta]['cid'] = NULL;
+  }
+  
+  // Run the values thru drupal_execute() so they are properly validated.
+  $form_state = array('values' => $fields);
+  drupal_execute('views_calc_fields_form', $form_state);
+
 }
