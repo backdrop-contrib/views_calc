@@ -277,7 +277,7 @@ function views_calc_fields_form_validate($form, &$form_state) {
   foreach ($edit as $delta => $item) {
     if ($item['calc'] == '' || !is_numeric($delta)) {
       // remove blank fields, don't save them
-      unset($form_values[$delta]);
+      continue;
     } 
     else {
       // Remove all valid values from calc, if anything is left over, it is invalid.
@@ -294,6 +294,7 @@ function views_calc_fields_form_validate($form, &$form_state) {
         $repl[] = '${1}';
       }
       $remaining = trim(preg_replace($patterns, $repl, $item['calc']));
+      
       // Next, remove functions and numbers.
       $repl = array();
       $patterns = array();
@@ -316,9 +317,13 @@ function views_calc_fields_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];
   $edit = $form_values;
   foreach ($edit as $delta => $value) {
-    if ($value['calc'] == '' || !is_numeric($delta)) {
+    $value['calc'] = trim($value['calc']);
+    if (empty($value['calc']) || !is_numeric($delta)) {
       // remove blank fields, don't save them
       unset($form_values[$delta]);
+      if (!empty($value['cid'])) {
+        db_query("DELETE FROM {views_calc_fields} WHERE cid=%d", $value['cid']);
+      }
 
     } 
     else {
@@ -355,7 +360,7 @@ function views_calc_fields_form_submit($form, &$form_state) {
       $form_values[$delta]['fieldlist'] = implode(',', $fields);
     }
   }
-  foreach ($form_values as $delta => $value) {
+  foreach ((array) $form_values as $delta => $value) {
     if ($value['cid'] == 0) {
       drupal_write_record('views_calc_fields', $value);
     } 
@@ -422,6 +427,9 @@ function views_calc_export_form() {
   $fields = _views_calc_fields();
   $string = '';
   while ($field = db_fetch_array($fields)) {
+    $base = $field['base'];
+    $substitutions = _views_calc_substitutions($base);
+    $field['calc'] = strtr($field['calc'], $substitutions);
     $string .= "\$fields[] = ". var_export((array) $field, TRUE) .";\n";
   }
     
@@ -460,6 +468,7 @@ function views_calc_import_form(&$form_state, $type_name = '') {
     }
     $form['#prefix'] .= '<p class="error">'. t('A file has been pre-loaded for import.') .'</p>';
   }
+  $form['#redirect'] = 'admin/settings/views_calc';
   return $form;
 }
 
