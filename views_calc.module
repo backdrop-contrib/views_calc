@@ -152,8 +152,21 @@ function views_calc_settings_form_submit($form, &$form_state) {
  */
 function views_calc_fields_form() {
   $i = 0;
-  $substitutions = _views_calc_substitutions();
-  $reverse       = array_flip($substitutions);
+  $substitutions = array();
+  $help = t('<p>The specific fields that are available in any view depend on the base table used for that view.</p>');
+  require_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
+  $base_tables = views_fetch_base_tables();
+  foreach ($base_tables as $base => $data) {
+    $base_subs = _views_calc_substitutions($base);
+    $substitutions += $base_subs;
+    $fieldset = array(
+      '#title' => t('Base table: !name', array('!name' => t($data['title']))),
+      '#value' => theme('item_list', $base_subs),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      );
+    $help .= theme('fieldset', $fieldset);
+  }
 
   // display current views calcs fields
   $fields = _views_calc_fields();
@@ -167,7 +180,7 @@ function views_calc_fields_form() {
     $form[] = views_calc_field_form_item($i, $field, $substitutions);
   }
   $form['#prefix'] = '<div class="views-calc-field-settings">';
-  $form['#suffix'] = '</div><div class="views-calc-field-names"><strong>Field Substitutions</strong><div class="form-item">'. theme('item_list', _views_calc_substitutions()) .'</div></div>';
+  $form['#suffix'] = '</div><div class="views-calc-field-names"><strong>Field Substitutions</strong><div class="form-item">'. $help .'</div></div>';
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -181,6 +194,12 @@ function views_calc_fields_form() {
 function views_calc_field_form_item($i, $field, $substitutions) {
   if (empty($field)) {
     $field = array('cid' => 0, 'label' => '', 'tablelist' => '', 'calc' => '', 'format' => '', 'custom' => '');
+  }
+  require_once(drupal_get_path('module', 'views') .'/includes/admin.inc');
+  $options = array();
+  $base_tables = views_fetch_base_tables();
+  foreach ($base_tables as $base => $data) {
+    $options[$base] = t($data['title']);
   }
   $form['group'][$i] = array(
     '#type' => 'fieldset',
@@ -204,11 +223,18 @@ function views_calc_field_form_item($i, $field, $substitutions) {
     '#default_value' => str_replace('ViewsCalc: ', '', $field['label']),
     '#description' => t('The views field name for this field (i.e. Views Calc: My Calculation).'),
     );
+  $form['group'][$i]['base'] = array(
+    '#type' => 'select',
+    '#title' => t('Base table'),
+    '#options' => $options,
+    '#default_value' => !empty($field['base']) && array_key_exists($field['base'], $options) ? $field['base'] : 'node',
+    '#description' => t('The base table for this field.'),
+    );
   $form['group'][$i]['calc'] = array(
     '#type' => 'textarea',
     '#title' => t('Calculation'),
     '#default_value' => strtr($field['calc'], $substitutions),
-    '#description' => t('<p>The query operation to be performed, using numbers, field substitutions, and '. implode(' ', _views_calc_operators()) .'.</p>'),
+    '#description' => t('<p>The query operation to be performed, using numbers, field substitutions, and '. implode(' ', _views_calc_operators()) .'. <strong>'. t('Note that all fields must be from the base table selected above!') .'</strong></p>'),
     );
   $form['group'][$i]['format'] = array(
     '#type' => 'select',
@@ -242,7 +268,8 @@ function views_calc_fields_form_validate($form, &$form_state) {
       // First, remove all field names.
       $repl = array();
       $patterns = array();
-      foreach (_views_calc_substitutions() as $key => $value) {
+      $base = $item['base'];
+      foreach (_views_calc_substitutions($base) as $key => $value) {
         $key = trim($value);
         $count = strlen($value);
         $replace = preg_quote($value);
@@ -283,10 +310,12 @@ function views_calc_fields_form_submit($form, &$form_state) {
       $form_values[$delta]['format'] = $value['format'];
       $form_values[$delta]['custom'] = $value['custom'];
       $form_values[$delta]['calc']   = $value['calc'];
+      $form_values[$delta]['base']   = $value['base'];
 
       // Substitute field names back into the calculation.
       $matches = array();
-      foreach (_views_calc_substitutions() as $key => $value) {
+      $base = $value['base'];
+      foreach (_views_calc_substitutions($base) as $key => $value) {
         $label_patterns[] = "`(^|[^\\\\\\\\])". preg_quote($value) ."`";
         $value_patterns[] = "`(^|[^\\\\\\\\])". preg_quote($key) ."`";
         $repl[] = '${1}'. $key;

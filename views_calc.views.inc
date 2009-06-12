@@ -25,7 +25,7 @@ function views_calc_views_data() {
   $data = array();
   $results = _views_calc_fields();
   while($field = db_fetch_array($results)) {
-    $data['node']['cid'. $field['cid']] = array(
+    $data[$field['base']]['cid'. $field['cid']] = array(
       'group' => t('Views Calc'),
       'title' => t($field['label']),
       'help' =>  $field['calc'],

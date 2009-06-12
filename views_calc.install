@@ -10,6 +10,7 @@ function views_calc_schema() {
       'label' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
       'format' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
       'custom' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
+      'base' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
       'tablelist' => array('type' => 'text', 'not null' => TRUE),
       'fieldlist' => array('type' => 'text', 'not null' => TRUE),
       'calc' => array('type' => 'text', 'not null' => TRUE),
@@ -125,20 +126,8 @@ function views_calc_update_2() {
   return $ret;
 }
 
-/**
- * TODO
- * Use these values to create new default views, then delete them.
- *
 function views_calc_update_6000() {
-  $view_calcs = (array) variable_get('views_calc_vid','');
-  foreach ($view_calcs as $view_id) {
-    variable_del('views_calc_'. $view_id .'_col');
-    variable_del('views_calc_'. $view_id .'_col_calc');
-    variable_del('views_calc_'. $view_id .'_row');
-    variable_del('views_calc_'. $view_id .'_row_calc');
-  }
-  variable_del('views_calc_vid');
-  variable_del('views_calc_operators');
-  
+  $ret = array();
+  db_add_field($ret, 'views_calc_fields', 'base', array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => 'node'));
+  return $ret;
 }
- */
