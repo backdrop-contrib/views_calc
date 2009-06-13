@@ -314,13 +314,16 @@ function views_calc_fields_form_validate($form, &$form_state) {
  *  Save the views calc field settings
  */
 function views_calc_fields_form_submit($form, &$form_state) {
-  $form_values = $form_state['values'];
-  $edit = $form_values;
+  $edit = $form_state['values'];
+  $form_values = array();
   foreach ($edit as $delta => $value) {
+    // If this is some form item we don't care about, skip it.
+    if (!is_array($value) || !is_numeric($delta)) {
+      continue;
+    }
     $value['calc'] = trim($value['calc']);
-    if (empty($value['calc']) || !is_numeric($delta)) {
+    if (empty($value['calc'])) {
       // remove blank fields, don't save them
-      unset($form_values[$delta]);
       if (!empty($value['cid'])) {
         db_query("DELETE FROM {views_calc_fields} WHERE cid=%d", $value['cid']);
       }
@@ -360,8 +363,9 @@ function views_calc_fields_form_submit($form, &$form_state) {
       $form_values[$delta]['fieldlist'] = implode(',', $fields);
     }
   }
+  
   foreach ((array) $form_values as $delta => $value) {
-    if ($value['cid'] == 0) {
+    if (empty($value['cid'])) {
       drupal_write_record('views_calc_fields', $value);
     } 
     else {
