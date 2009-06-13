@@ -167,6 +167,10 @@ class views_calc_table extends views_plugin_style_table {
     foreach ($this->view->field as $field) {
       $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table .'.'. $field->field;
       $query_alias = $field->field_alias;
+      // Bail if we have a broken handler.
+      if ($query_alias == 'unknown') {
+        continue;
+      }
       if (in_array($field->field, $fields)) {
         // Calculated fields.
         $this->view->query->add_field(NULL, "$calc($query_field)", $query_alias);
@@ -206,6 +210,10 @@ class views_calc_table extends views_plugin_style_table {
     foreach ($this->view->field as $field) {
       $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table .'.'. $field->field;
       $query_alias = $field->field_alias;
+      // Bail if we have a broken handler.
+      if ($query_alias == 'unknown') {
+        continue;
+      }
       $this->view->query->add_table($field->table, NULL, NULL, $field->table);
       if (!empty($fields) && in_array($field->field, $fields)) {
         // Calculated fields.

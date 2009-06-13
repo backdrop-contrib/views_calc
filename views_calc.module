@@ -232,6 +232,13 @@ function views_calc_field_form_item($i, $field, $substitutions) {
     '#type' => 'hidden',
     '#value' => $field['tablelist'],
     );
+  $form['group'][$i]['base'] = array(
+    '#type' => 'select',
+    '#title' => t('Base table'),
+    '#options' => $options,
+    '#default_value' => !empty($field['base']) && array_key_exists($field['base'], $options) ? $field['base'] : 'node',
+    '#description' => t('The base table for this field.'),
+    );    
   $form['group'][$i]['label'] = array(
     '#type' => 'textfield',
     '#title' => t('Label'),
@@ -239,18 +246,11 @@ function views_calc_field_form_item($i, $field, $substitutions) {
     '#default_value' => str_replace('ViewsCalc: ', '', $field['label']),
     '#description' => t('The views field name for this field (i.e. Views Calc: My Calculation).'),
     );
-  $form['group'][$i]['base'] = array(
-    '#type' => 'select',
-    '#title' => t('Base table'),
-    '#options' => $options,
-    '#default_value' => !empty($field['base']) && array_key_exists($field['base'], $options) ? $field['base'] : 'node',
-    '#description' => t('The base table for this field.'),
-    );
   $form['group'][$i]['calc'] = array(
     '#type' => 'textarea',
     '#title' => t('Calculation'),
     '#default_value' => strtr($field['calc'], $substitutions),
-    '#description' => t('<p>The query operation to be performed, using numbers, field substitutions, and '. implode(' ', _views_calc_operators()) .'. <strong>'. t('Note that all fields must be from the base table selected above!') .'</strong></p>'),
+    '#description' => t("<p>The query operation to be performed, using numbers, field substitutions, and ". implode(' ', _views_calc_operators()) .". Leave spaces between parentheses and field names, i.e. 'CONCAT( %field1, ' ', %field2 )'. <strong>". t('Note that all fields must be from the base table selected above! You cannot combine fields from different base tables.') ."</strong></p>"),
     );
   $form['group'][$i]['format'] = array(
     '#type' => 'select',
@@ -349,7 +349,7 @@ function views_calc_fields_form_submit($form, &$form_state) {
       $fields = array();
       foreach ($value_patterns as $pattern) {
         if (preg_match($pattern, $form_values[$delta]['calc'], $results)) {
-          $fields[] = trim($results[0]);
+          $fields[trim($results[0])] = trim($results[0]);
           $tmp = explode('.', trim($results[0]));
           if (trim($tmp[0])) {
             $tables[trim($tmp[0])] = trim($tmp[0]);
