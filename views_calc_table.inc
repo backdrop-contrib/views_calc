@@ -78,7 +78,7 @@ class views_calc_table extends views_plugin_style_table {
    */
   function pre_render($results) {
     parent::pre_render($results);
-       
+    
     // If there are no calc fields, do nothing.
     if (!$calc_fields = $this->get_calc_fields()) {
       return;
@@ -87,7 +87,6 @@ class views_calc_table extends views_plugin_style_table {
     if (!empty($this->view->views_calc_calculation)) {
       return;
     }
-   
     $this->view->totals = array();
     $this->view->sub_totals = array();
       
@@ -102,15 +101,17 @@ class views_calc_table extends views_plugin_style_table {
         $nids[] = $value->nid;
       }
       // Add sub_total rows to the results.
+      // TODO Looks like we have problems unless we
+      // force a non-page display, need to keep an eye on this.
       foreach ($calc_fields as $calc => $field) {
         if ($summary_view = views_get_view($this->view->name)) {
-          $summary_view->set_display($this->view->current_display);
+          //$summary_view->set_display($this->view->current_display);
           $summary_view->set_arguments($this->view->args);
           $summary_view->views_calc_calculation = $calc;
           $summary_view->views_calc_nids = $nids;
           $summary_view->views_calc_sub_total = TRUE;
           $summary_view->is_cacheable = FALSE;
-          $summary_view->execute();
+          $summary_view->preview();
           $this->view->sub_totals[] = array_shift($summary_view->result);
         }
       }
@@ -119,14 +120,14 @@ class views_calc_table extends views_plugin_style_table {
     // Add grand totals to the results.
     foreach ($calc_fields as $calc => $field) {
       if ($summary_view = views_get_view($this->view->name)) {
-        $summary_view->set_display($this->view->current_display);
+        //$summary_view->set_display($this->view->current_display);
         $summary_view->set_arguments($this->view->args);
         $summary_view->pager['items_per_page'] = 0;
         $summary_view->views_calc_calculation = $calc;
         $summary_view->views_calc_nids = array();
         $summary_view->views_calc_sub_total = FALSE;
         $summary_view->is_cacheable = FALSE;
-        $summary_view->execute();
+        $summary_view->preview();
         $this->view->totals[] = array_shift($summary_view->result);
       }
     }
