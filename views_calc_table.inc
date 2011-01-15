@@ -105,8 +105,9 @@ class views_calc_table extends views_plugin_style_table {
       // force a non-page display, need to keep an eye on this.
       foreach ($calc_fields as $calc => $field) {
         if ($summary_view = views_get_view($this->view->name)) {
-          //$summary_view->set_display($this->view->current_display);
+          $summary_view->set_display($this->view->current_display);
           $summary_view->set_arguments($this->view->args);
+          $summary_view->display_handler->set_option('use_pager', FALSE);
           $summary_view->views_calc_calculation = $calc;
           $summary_view->views_calc_ids = $ids;
           $summary_view->views_calc_sub_total = TRUE;
@@ -120,9 +121,9 @@ class views_calc_table extends views_plugin_style_table {
     // Add grand totals to the results.
     foreach ($calc_fields as $calc => $field) {
       if ($summary_view = views_get_view($this->view->name)) {
-        //$summary_view->set_display($this->view->current_display);
+        $summary_view->set_display($this->view->current_display);
         $summary_view->set_arguments($this->view->args);
-        $summary_view->pager['items_per_page'] = 0;
+        $summary_view->display_handler->set_option('use_pager', FALSE);
         $summary_view->views_calc_calculation = $calc;
         $summary_view->views_calc_ids = array();
         $summary_view->views_calc_sub_total = FALSE;
