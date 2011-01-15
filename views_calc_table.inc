@@ -160,7 +160,13 @@ class views_calc_table extends views_plugin_style_table {
     // Create summary rows.
     $calc_fields = $this->get_calc_fields();
     $calc = $this->view->views_calc_calculation;
+    // Empty out any fields that have been added to the query,
+    // we don't need them for the summary totals.
     $fields = $calc_fields[$calc];
+    // Clear out any sorting and grouping, it can create unexpected results
+    // when Views adds aggregation values for the sorts.
+    $this->view->query->orderby = array();
+    $this->view->query->groupby = array();
     
     // Empty out any fields that have been added to the query,
     // we don't need them for the summary totals.
