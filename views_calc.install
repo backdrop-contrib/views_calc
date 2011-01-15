@@ -28,6 +28,8 @@ function views_calc_install() {
 
 function views_calc_uninstall() {
   db_query("DROP TABLE {views_calc_fields}");
+
+  variable_del('views_calc_operators');
 }
 
 /**
