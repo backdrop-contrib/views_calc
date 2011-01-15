@@ -131,17 +131,19 @@ function template_preprocess_views_calc_table(&$vars) {
     if ($active == $field) {
       $vars['fields'][$field] .= ' active';
     }
+  }
 
-    // Render each field into its appropriate column.
-    foreach ($result as $num => $row) {
+  // Render each field into its appropriate column.
+  foreach ($result as $num => $row) {
+    foreach ($columns as $field => $column) {
+      $field_output = $fields[$field]->theme($row);
       if (!empty($fields[$field]) && empty($fields[$field]->options['exclude'])) {
-        $field_output = $fields[$field]->theme($row);
 
         // Don't bother with separators and stuff if the field does not show up.
         if (!isset($field_output) && isset($vars['rows'][$num][$column])) {
           continue;
         }
-        
+
         if ($hide_details) {
           continue;
         }
@@ -160,7 +162,7 @@ function template_preprocess_views_calc_table(&$vars) {
       }
     }
   }
-  
+
   // Add totals.
   if($view->total_rows > $view->pager['items_per_page']) {
     $process_available = array('sub_totals', 'totals');  
