@@ -96,9 +96,9 @@ class views_calc_table extends views_plugin_style_table {
     if (!empty($this->view->pager) 
     && !empty($this->view->pager['use_pager']) 
     && !empty($this->view->pager['items_per_page'])) {
-      $nids = array();
+      $ids = array();
       foreach ($this->view->result as $delta => $value) {
-        $nids[] = $value->nid;
+        $ids[] = $value->{$this->view->base_field};
       }
       // Add sub_total rows to the results.
       // TODO Looks like we have problems unless we
@@ -108,7 +108,7 @@ class views_calc_table extends views_plugin_style_table {
           //$summary_view->set_display($this->view->current_display);
           $summary_view->set_arguments($this->view->args);
           $summary_view->views_calc_calculation = $calc;
-          $summary_view->views_calc_nids = $nids;
+          $summary_view->views_calc_ids = $ids;
           $summary_view->views_calc_sub_total = TRUE;
           $summary_view->is_cacheable = FALSE;
           $summary_view->preview();
@@ -124,7 +124,7 @@ class views_calc_table extends views_plugin_style_table {
         $summary_view->set_arguments($this->view->args);
         $summary_view->pager['items_per_page'] = 0;
         $summary_view->views_calc_calculation = $calc;
-        $summary_view->views_calc_nids = array();
+        $summary_view->views_calc_ids = array();
         $summary_view->views_calc_sub_total = FALSE;
         $summary_view->is_cacheable = FALSE;
         $summary_view->preview();
@@ -188,11 +188,11 @@ class views_calc_table extends views_plugin_style_table {
         $this->view->query->add_field(NULL, "MAX('')", $query_alias);
       }
       // Add a dummy field for the groupby.
-      $this->view->query->add_field(NULL, "MAX('". $calc ."')", "TOTAL_". $calc);
+      $this->view->query->add_field(NULL, "MAX('" . $calc . "')", "TOTAL_". $calc);
     }
     // TODO This won't work right with relationships, need a fix here.
-    if (!empty($this->view->views_calc_nids)) {
-      $this->view->query->add_where(NULL, "node.nid IN (%s)", implode(',', $this->view->views_calc_nids));
+    if (!empty($this->view->views_calc_ids)) {
+      $this->view->query->add_where(NULL, $this->view->base_table . "." . $this->view->base_field . " IN (%s)", implode(',', $this->view->views_calc_ids));
     }
   }
   
