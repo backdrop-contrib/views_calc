@@ -153,7 +153,7 @@ class views_calc_plugin_style_chart extends views_plugin_style {
             if ($this->options['show_legend']) {
               $data[$calc]['#legend'] = $legend;
             }
-            $value['#label'] = strip_tags(theme_views_view_field($this->view, $this->view->field[$key], $row)); // .': '. $row->$calc;
+            $value['#label'] = strip_tags(theme('views_view_field', $this->view, $this->view->field[$key], $row)); // .': '. $row->$calc;
             $value['#value'] = $row->$calc;
             $data[$calc][] = $value;
           }
