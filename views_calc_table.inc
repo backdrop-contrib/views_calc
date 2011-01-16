@@ -126,8 +126,11 @@ class views_calc_table extends views_plugin_style_table {
   }
 
   function execute_summary_view($calc, $ids = array()) {
-    // Load the view and check access to the given display.
-    if (!($summary_view = views_get_view($this->view->name)) || !$this->view->access($this->view->current_display)) {
+    // Clone view for local subquery.
+    $summary_view = $this->view->clone_view();
+
+    // Check access to the given display.
+    if (!$this->view->access($this->view->current_display)) {
       return NULL;
     }
 
