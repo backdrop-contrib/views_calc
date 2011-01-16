@@ -12,14 +12,17 @@ function views_calc_views_handlers() {
       'views_calc_field_handler' => array(
         'parent' => 'views_handler_field',
       ),
+      'views_calc_handler_sort' => array(
+        'parent' => 'views_handler_sort',
+       ),
     ),
   );
 }
 
 /**
- *  Implementation of hook_views_data().
+ * Implementation of hook_views_data().
  *
- *  Add calc fields to views field list.
+ * Add calc fields to views field list.
  */
 function views_calc_views_data() {
   $data = array();
@@ -39,6 +42,9 @@ function views_calc_views_data() {
         'format'  => $field['format'],
         'custom'  => $field['custom'],
         'calc'  => $field['calc'],
+      ),
+      'sort' => array(
+        'handler' => 'views_calc_handler_sort',
       ),
     );
   }
