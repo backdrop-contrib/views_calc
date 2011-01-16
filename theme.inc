@@ -7,6 +7,7 @@
  * An array of preprocessors to fill variables for templates and helper
  * functions to make theming easier.
  */
+
 /**
  * Theme the form for the table style plugin
  */
@@ -66,7 +67,7 @@ function theme_views_calc_ui_table($form) {
  * Display a view as a table style.
  */
 function template_preprocess_views_calc_table(&$vars) {
-  $view     = $vars['view'];
+  $view = $vars['view'];
   if (!empty($view->views_calc_calculation)) {
     $vars['rows'] = array();
     return;
@@ -80,8 +81,6 @@ function template_preprocess_views_calc_table(&$vars) {
   // so that it can get rebuilt.
   $result   = $vars['rows'];
   $vars['rows'] = array();
-  $totals   = $view->totals;
-  $sub_totals = $view->sub_totals;
     
   $options  = $view->style_plugin->options;
   $handler  = $view->style_plugin;
@@ -99,8 +98,8 @@ function template_preprocess_views_calc_table(&$vars) {
     $query = '&' . $query;
   }
 
+  // Render the header labels.
   foreach ($columns as $field => $column) {
-    // render the header labels
     if ($field == $column && empty($fields[$field]->options['exclude'])) {
       $label = check_plain(!empty($fields[$field]) ? $fields[$field]->label() : '');
       if (empty($options['info'][$field]['sortable'])) {
@@ -133,7 +132,7 @@ function template_preprocess_views_calc_table(&$vars) {
     }
   }
 
-  // Render each field into its appropriate column.
+  // Render each field into its appropriate column. Preserve rows.
   foreach ($result as $num => $row) {
     foreach ($columns as $field => $column) {
       $field_output = $fields[$field]->theme($row);
@@ -164,68 +163,74 @@ function template_preprocess_views_calc_table(&$vars) {
   }
 
   // Add totals.
-  if($view->total_rows > $view->pager['items_per_page']) {
-    $process_available = array('sub_totals', 'totals');  
+  $vars['totals'] = array();
+  $vars['sub_totals'] = array();
+  if ($view->total_rows > $view->pager['items_per_page']
+    && $view->sub_totals) {
+    views_calc_table_total($vars, 'sub_totals', $view->sub_totals);
   }
-  else{
-    $process_available = array('totals');
-    $vars['sub_totals'] = array(); //if don't set, error in template
-  }
-  foreach ($process_available as $process) {
-    $vars[$process] = array();
-    $added_label = array();
-    foreach ($columns as $field => $column) {
-      $field_alias = $fields[$field]->field_alias;
-      if ($field == $column && empty($fields[$field]->options['exclude'])) {
-        foreach ($$process as $num => $row) {
-          $type = '';
-          foreach ($row as $item) {
-            if (in_array($item, array_keys(_views_calc_calc_options()))) {
-              $type = $item;
-              break;
-            }
-          }
-          if (!empty($row->$field_alias) || (isset($row->$field_alias) && $row->$field_alias === 0)) {
-    
-            // COUNT is always a numeric value, no matter what kind of field it is.
-            if ($type == 'COUNT') {
-              $vars[$process][$type][$column] =  $row->$field_alias;
-            }
-            // Calculations other than COUNT should run the value through the field's theme.
-            // This will allow dates and numeric values to apply the right formatting to the result.
-            else {
-              $vars[$process][$type][$column] =  $fields[$field]->theme($row);
-            }
-          }
-          elseif (!empty($type)) {
-            // Add the calc type label into the first empty column.
-            // Identify which is the sub total and which the grand total
-            // when both are provided.
-            if (empty($added_label[$type])) {
-              if ($process == 'sub_totals') {
-                $label = t("Page !Calculation", array("!Calculation" => $type));
-              }
-              else {
-                $label = t("Total !Calculation", array("!Calculation" => $type));
-              }
-              $vars[$process][$type][$column] = $label;
-              $added_label[$type] = TRUE;
-            }
-            else {
-              $vars[$process][$type][$column] = '';
-            }
-          }
-        }
-      }
-    }
+  if ($view->totals) {
+    views_calc_table_total($vars, 'totals', $view->totals);
   }
 
+  // Add classes.
   $vars['class'] = 'views-table';
   if (!empty($options['sticky'])) {
     drupal_add_js('misc/tableheader.js');
     $vars['class'] .= " sticky-enabled";
   }
-  
-  return;
-     
+}
+
+/**
+ * Build total var line.
+ */
+function views_calc_table_total(&$vars, $key, $totals) {
+  $view = $vars['view'];
+  $options  = $view->style_plugin->options;
+  $handler  = $view->style_plugin;
+  $fields   = &$view->field;
+  $columns  = $handler->sanitize_columns($options['columns'], $fields);
+
+    $vars[$key] = array();
+    $added_label = array();
+
+    foreach ($view->views_calc_fields as $calc => $calc_fields) {
+      $row = $totals[$calc];
+      foreach ($columns as $field => $column) {
+        $field_alias = $fields[$field]->field_alias;
+        if ($field == $column && empty($fields[$field]->options['exclude'])) {
+          if (in_array($field, $calc_fields)
+            && isset($row->$field_alias)) {
+            // COUNT is always a numeric value, no matter what kind of field it is.
+            if ($calc == 'COUNT') {
+              $vars[$key][$calc][$column] =  $row->$field_alias;
+            }
+            // Calculations other than COUNT should run the value through the field's theme.
+            // This will allow dates and numeric values to apply the right formatting to the result.
+            else {
+              $vars[$key][$calc][$column] =  $fields[$field]->theme($row);
+            }
+          
+          }
+          else {
+            // Add the calc type label into the first empty column.
+            // Identify which is the sub total and which the grand total
+            // when both are provided.
+            if (empty($added_label[$calc])) {
+              if ($key == 'sub_totals') {
+                $label = t("Page !Calculation", array("!Calculation" => $calc));
+              }
+              else {
+                $label = t("Total !Calculation", array("!Calculation" => $calc));
+              }
+              $vars[$key][$calc][$column] = $label;
+              $added_label[$calc] = TRUE;
+            }
+            else {
+              $vars[$key][$calc][$column] = '';
+            }
+          }
+        }
+      }
+    }
 }

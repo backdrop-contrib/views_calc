@@ -4,6 +4,10 @@
  * This module will allow you to add calculated fields to views tables
  * and compute (SUM, COUNT, AVG, etc) columns of numeric data in a views table.
  */
+
+/**
+ * Implements hook_views_api().
+ */
 function views_calc_views_api() {
   return array(
     'api' => 2,
@@ -11,6 +15,9 @@ function views_calc_views_api() {
   );
 }
 
+/**
+ * Implements hook_theme().
+ */
 function views_calc_theme() {
   $path = drupal_get_path('module', 'views_calc');
   return array(
@@ -22,7 +29,7 @@ function views_calc_theme() {
 }
 
 /**
- * Implementation of hook_help().
+ * Implements hook_help().
  */
 function views_calc_help($section, $arg) {
   switch ($section) {
@@ -52,14 +59,20 @@ function _views_calc_operators() {
 }
 
 /**
- *  Column calculation alternatives
+ *  Column calculation alternatives.
  */
 function _views_calc_calc_options() {
-  return array('COUNT' => 'Count', 'SUM' => 'Sum', 'AVG' => 'Average', 'MIN' => 'Minimum', 'MAX' => 'Maximum');
+  return array(
+    'COUNT' => t('Count'),
+    'SUM' => t('Sum'),
+    'AVG' => t('Average'),
+    'MIN' => t('Minimum'),
+    'MAX' => t('Maximum'),
+  );
 }
 
 /**
- *  Result format options
+ *  Result format options.
  */
 function _views_calc_format_options() {
   $options = array(
@@ -76,7 +89,7 @@ function _views_calc_format_options() {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implements hook_perm().
  *
  * The permission 'administer views calc' has rights to alter the SQL
  * operators that can be used in calculations.
@@ -85,12 +98,18 @@ function _views_calc_format_options() {
  * fields and set calculation columns on views.
  */
 function views_calc_perm() {
-  return array('create views calc', 'administer views calc');
+  return array(
+    'create views calc',
+    'administer views calc'
+  );
 }
 
+/**
+ * Implements hook_menu().
+ */
 function views_calc_menu() {
-
   $items = array();
+
   $items['admin/settings/views_calc'] = array(
     'title' => t('Views Calc'),
     'description' => t('Set Views Calc fields and columns.'),
@@ -140,7 +159,7 @@ function views_calc_menu() {
 }
 
 /**
- *  Implementation of hook_settings()
+ * FAPI settings_form.
  */
 function views_calc_settings_form() {
   drupal_set_title(t('Views Calc'));
@@ -158,12 +177,17 @@ function views_calc_settings_form() {
   return $form;
 }
 
+/**
+ * FAPI settings_form submit.
+ */
 function views_calc_settings_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];
   variable_set('views_calc_operators', $form_values['views_calc_operators']);
 }
 
 /**
+ * FAPI fields_form.
+ *
  * Views Calc Fields tab on views list.
  */
 function views_calc_fields_form() {
@@ -269,7 +293,9 @@ function views_calc_field_form_item($i, $field, $substitutions) {
 }
 
 /**
- *  Validate the views calc settings
+ * FAPI fields_form validate.
+ *
+ * Validate the views calc settings
  */
 function views_calc_fields_form_validate($form, &$form_state) {
   $form_values = $form_state['values'];
@@ -311,7 +337,9 @@ function views_calc_fields_form_validate($form, &$form_state) {
 }
 
 /**
- *  Save the views calc field settings
+ * FAPI fields_form submit.
+ *
+ * Save the views calc field settings
  */
 function views_calc_fields_form_submit($form, &$form_state) {
   $edit = $form_state['values'];
@@ -407,14 +435,14 @@ function _views_calc_substitutions($base = 'node') {
 }
 
 /**
- *  Views calc fields result object
+ * Views calc fields result object.
  */
 function _views_calc_fields() {
   return db_query("SELECT * FROM {views_calc_fields}");
 }
 
 /**
- *  An array of allowable calculation values.
+ * An array of allowable calculation values.
  */
 function _views_calc_replacements() {
   $operators     = array_filter(_views_calc_operators(), 'trim');
@@ -424,6 +452,8 @@ function _views_calc_replacements() {
 
 
 /**
+ * FAPI export_form.
+ *
  * Field export form.
  */
 function views_calc_export_form() {
@@ -449,6 +479,8 @@ function views_calc_export_form() {
 }
 
 /**
+ * FAPI import_form.
+ *
  * Field import form.
  */
 function views_calc_import_form(&$form_state, $type_name = '') {
@@ -477,7 +509,9 @@ function views_calc_import_form(&$form_state, $type_name = '') {
 }
 
 /**
- *  Submit handler for import form.
+ * FAPI import_form submit.
+ *
+ * Submit handler for import form.
  */
 function views_calc_import_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];

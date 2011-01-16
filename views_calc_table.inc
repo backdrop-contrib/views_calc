@@ -12,6 +12,9 @@
  */
 class views_calc_table extends views_plugin_style_table {
  
+  /**
+   * Option definition.
+   */
   function option_definition() {
     $options = parent::option_definition();
 
@@ -73,6 +76,11 @@ class views_calc_table extends views_plugin_style_table {
   }
 
   /**
+   * Views Method pre_render().
+   *
+   * Build grand total and page sub total.
+   * Query calc fields using sub-view and add data.
+   *
    * TODO
    * figure out what changes are needed so Views field groups will work.
    */
@@ -89,51 +97,81 @@ class views_calc_table extends views_plugin_style_table {
     }
     $this->view->totals = array();
     $this->view->sub_totals = array();
+    $this->view->views_calc_fields = $this->get_calc_fields();
       
     // Subtotals and pager totals require a list of the specific
     // values to include.
     $paged = FALSE;
     if (!empty($this->view->pager) 
     && !empty($this->view->pager['use_pager']) 
-    && !empty($this->view->pager['items_per_page'])) {
+    && !empty($this->view->pager['items_per_page'])
+    && $this->view->total_rows > $this->view->pager['items_per_page']) {
       $ids = array();
       foreach ($this->view->result as $delta => $value) {
         $ids[] = $value->{$this->view->base_field};
       }
       // Add sub_total rows to the results.
+      // We need one query per aggregation because theming needs unrenamed views field alias.
       // TODO Looks like we have problems unless we
       // force a non-page display, need to keep an eye on this.
       foreach ($calc_fields as $calc => $field) {
-        if ($summary_view = views_get_view($this->view->name)) {
-          $summary_view->set_display($this->view->current_display);
-          $summary_view->set_arguments($this->view->args);
-          $summary_view->display_handler->set_option('use_pager', FALSE);
-          $summary_view->views_calc_calculation = $calc;
-          $summary_view->views_calc_ids = $ids;
-          $summary_view->views_calc_sub_total = TRUE;
-          $summary_view->is_cacheable = FALSE;
-          $summary_view->preview();
-          $this->view->sub_totals[] = array_shift($summary_view->result);
-        }
+        $this->execute_summary_view($calc, $ids);
       }
     }
     
     // Add grand totals to the results.
     foreach ($calc_fields as $calc => $field) {
-      if ($summary_view = views_get_view($this->view->name)) {
-        $summary_view->set_display($this->view->current_display);
-        $summary_view->set_arguments($this->view->args);
-        $summary_view->display_handler->set_option('use_pager', FALSE);
-        $summary_view->views_calc_calculation = $calc;
-        $summary_view->views_calc_ids = array();
-        $summary_view->views_calc_sub_total = FALSE;
-        $summary_view->is_cacheable = FALSE;
-        $summary_view->preview();
-        $this->view->totals[] = array_shift($summary_view->result);
+      $this->execute_summary_view($calc);
+    }
+  }
+
+  function execute_summary_view($calc, $ids = array()) {
+    // Load the view and check access to the given display.
+    if (!($summary_view = views_get_view($this->view->name)) || !$this->view->access($this->view->current_display)) {
+      return NULL;
+    }
+
+    // Make sure the view is completely valid.
+    $errors = $summary_view->validate();
+    if (is_array($errors)) {
+      foreach ($errors as $error) {
+        drupal_set_message($error, 'error');
+      }
+      return NULL;
+    }
+
+    // intialize summary view
+    $is_subtotal = !empty($ids);
+    $summary_view->preview = TRUE;
+    $summary_view->is_cacheable = FALSE;
+    $summary_view->views_calc_calculation = $calc;
+    $summary_view->views_calc_ids = $ids;
+    $summary_view->views_calc_sub_total = $is_subtotal;
+    $summary_view->views_calc_fields = $this->view->views_calc_fields;
+
+    // if not subtotal, get all results
+    if (!$is_subtotal) {
+      $summary_view->pager['items_per_page'] = 0;
+    }
+
+    // Execute and render the view in preview mode. Note that we only store
+    // the result if the executed view query returns any result.
+    $summary_view->pre_execute($this->view->args);
+    $summary_view->execute($this->view->current_display);
+    $summary_view->post_execute();
+    if (!empty($summary_view->result)) {
+      if ($is_subtotal) {
+        $this->view->sub_totals[$calc] = array_shift($summary_view->result);
+      }
+      else {
+        $this->view->totals[$calc] = array_shift($summary_view->result);
       }
     }
   }
 
+  /**
+   * Views Method query().
+   */
   function query() {
     parent::query();
     
@@ -142,70 +180,26 @@ class views_calc_table extends views_plugin_style_table {
       return;
     }
     // If there are no calc fields, do nothing.
-    if (!$calc_fields = $this->get_calc_fields()) {
+    //if (!$calc_fields = $this->get_calc_fields()) {
+    if (!$this->view->views_calc_fields) {
       return;
     }
 
-    if (!empty($this->view->views_calc_sub_total)) {
-      $this->query_sub_total();
-    }
-    else {
-      $this->query_total();
-    }
+    // Rebuild the total query.
+    $this->query_total();
   }
   
   /**
-   * 
-   */
-  function query_sub_total() {
-    // Create summary rows.
-    $calc_fields = $this->get_calc_fields();
-    $calc = $this->view->views_calc_calculation;
-    // Empty out any fields that have been added to the query,
-    // we don't need them for the summary totals.
-    $fields = $calc_fields[$calc];
-    // Clear out any sorting and grouping, it can create unexpected results
-    // when Views adds aggregation values for the sorts.
-    $this->view->query->orderby = array();
-    $this->view->query->groupby = array();
-    
-    // Empty out any fields that have been added to the query,
-    // we don't need them for the summary totals.
-    $this->view->query->fields = array();
-    foreach ($this->view->field as $field) {
-      $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table .'.'. $field->field;
-      $query_alias = $field->field_alias;
-      // Bail if we have a broken handler.
-      if ($query_alias == 'unknown') {
-        continue;
-      }
-      if (in_array($field->field, $fields)) {
-        // Calculated fields.
-        $this->view->query->add_field(NULL, "$calc($query_field)", $query_alias);
-        $this->view->query->add_table($field->table, NULL, NULL, $field->table);
-      }
-      else {
-        // Empty fields that have no calculations.
-        $this->view->query->add_field(NULL, "MAX('')", $query_alias);
-      }
-      // Add a dummy field for the groupby.
-      $this->view->query->add_field(NULL, "MAX('" . $calc . "')", "TOTAL_". $calc);
-    }
-    // TODO This won't work right with relationships, need a fix here.
-    if (!empty($this->view->views_calc_ids)) {
-      $this->view->query->add_where(NULL, $this->view->base_table . "." . $this->view->base_field . " IN (%s)", implode(',', $this->view->views_calc_ids));
-    }
-  }
-  
-  /**
-   * The grand total can be computed using GROUPBY without regard
-   * to pager values.
+   * Query grand total
+   *
+   * The grand total can be computed using GROUPBY without regard to pager values.
+   *
+   * @see query().
    */
   function query_total() {
     // Create summary rows.
-    $calc_fields = $this->get_calc_fields();
     $calc = $this->view->views_calc_calculation;
-    $fields = $calc_fields[$calc];
+    $fields = $this->view->views_calc_fields[$calc];
     
     // Empty out any fields that have been added to the query,
     // we don't need them for the summary totals.
@@ -229,14 +223,21 @@ class views_calc_table extends views_plugin_style_table {
       }
       else {
         // Empty fields that have no calculations.
-        $this->view->query->add_field(NULL, "MAX('')", $query_alias);
+        $this->view->query->add_field(NULL, "NULL", $query_alias);
       }
-      // Add a dummy field for the groupby.
-      $this->view->query->add_field(NULL, "MAX('". $calc ."')", "TOTAL_". $calc);
+    }
+    // TODO This won't work right with relationships, need a fix here.
+    // Limit to specific primary ids. This is for subtotals.
+    if (!empty($this->view->views_calc_ids)) {
+      $this->view->query->add_where(NULL, $this->view->base_table . "." . $this->view->base_field . " IN (%s)", implode(',', $this->view->views_calc_ids));
     }
   }
 
+  /**
+   * Get views_calc fields
+   */
   function get_calc_fields() {
+    // TODO on preview this returns the wrong list.
     $options  = $this->view->style_plugin->options;
     $handler  = $this->view->style_plugin;
     $fields   = $this->view->field;
