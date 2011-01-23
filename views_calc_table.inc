@@ -128,6 +128,10 @@ class views_calc_table extends views_plugin_style_table {
   function execute_summary_view($calc, $ids = array()) {
     // Clone view for local subquery.
     $summary_view = $this->view->clone_view();
+
+    // Rebuild pager information later.
+    // Suppress pager functionality completely.
+    // We're filtering the page elements by $ids.
     unset($summary_view->pager);
 
     // Check access to the given display.
@@ -149,19 +153,22 @@ class views_calc_table extends views_plugin_style_table {
     $summary_view->preview = TRUE;
     $summary_view->is_cacheable = FALSE;
     $summary_view->views_calc_calculation = $calc;
-    $summary_view->views_calc_ids = $ids;
     $summary_view->views_calc_sub_total = $is_subtotal;
+    $summary_view->views_calc_ids = $ids;
     $summary_view->views_calc_fields = $this->view->views_calc_fields;
 
-    // if not subtotal, get all results
-    if (!$is_subtotal) {
-      $summary_view->pager['items_per_page'] = 0;
-    }
+    // set display
+    $summary_view->set_display($this->view->current_display);
 
     // Execute and render the view in preview mode. Note that we only store
     // the result if the executed view query returns any result.
     $summary_view->pre_execute($this->view->args);
-    $summary_view->execute($this->view->current_display);
+
+    // Don't change any global pager during this query.
+    // Else we will loose the global pager from the page view.
+    $summary_view->pager['use_pager'] = 0;
+
+    $summary_view->execute();
     $summary_view->post_execute();
     if (!empty($summary_view->result)) {
       if ($is_subtotal) {
