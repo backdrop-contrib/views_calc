@@ -355,10 +355,10 @@ function views_calc_fields_form_submit($form, &$form_state) {
       if (!empty($value['cid'])) {
         db_query("DELETE FROM {views_calc_fields} WHERE cid=%d", $value['cid']);
       }
-
     } 
     else {
       $tables = array();
+      $form_values[$delta]['cid']  = $value['cid'];
       $form_values[$delta]['label']  = $value['label'];
       $form_values[$delta]['format'] = $value['format'];
       $form_values[$delta]['custom'] = $value['custom'];
