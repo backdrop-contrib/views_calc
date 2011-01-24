@@ -97,7 +97,8 @@ class views_calc_table extends views_plugin_style_table {
     }
     $this->view->totals = array();
     $this->view->sub_totals = array();
-    $this->view->views_calc_fields = $this->get_calc_fields();
+    $this->view->views_calc_fields = $calc_fields;
+    $this->view->views_calc_calculation = FALSE;
       
     // Subtotals and pager totals require a list of the specific
     // values to include.
@@ -114,18 +115,14 @@ class views_calc_table extends views_plugin_style_table {
       // We need one query per aggregation because theming needs unrenamed views field alias.
       // TODO Looks like we have problems unless we
       // force a non-page display, need to keep an eye on this.
-      foreach ($calc_fields as $calc => $field) {
-        $this->execute_summary_view($calc, $ids);
-      }
+      $this->execute_summary_view($ids);
     }
     
     // Add grand totals to the results.
-    foreach ($calc_fields as $calc => $field) {
-      $this->execute_summary_view($calc);
-    }
+    $this->execute_summary_view();
   }
 
-  function execute_summary_view($calc, $ids = array()) {
+  function execute_summary_view($ids = array()) {
     // Clone view for local subquery.
     $summary_view = $this->view->clone_view();
 
@@ -152,7 +149,7 @@ class views_calc_table extends views_plugin_style_table {
     $is_subtotal = !empty($ids);
     $summary_view->preview = TRUE;
     $summary_view->is_cacheable = FALSE;
-    $summary_view->views_calc_calculation = $calc;
+    $summary_view->views_calc_calculation = TRUE;
     $summary_view->views_calc_sub_total = $is_subtotal;
     $summary_view->views_calc_ids = $ids;
     $summary_view->views_calc_fields = $this->view->views_calc_fields;
@@ -172,10 +169,10 @@ class views_calc_table extends views_plugin_style_table {
     $summary_view->post_execute();
     if (!empty($summary_view->result)) {
       if ($is_subtotal) {
-        $this->view->sub_totals[$calc] = array_shift($summary_view->result);
+        $this->view->sub_totals = array_shift($summary_view->result);
       }
       else {
-        $this->view->totals[$calc] = array_shift($summary_view->result);
+        $this->view->totals = array_shift($summary_view->result);
       }
     }
   }
@@ -185,13 +182,12 @@ class views_calc_table extends views_plugin_style_table {
    */
   function query() {
     parent::query();
-    
+
     // If we're not getting a summary row, do nothing.
     if (empty($this->view->views_calc_calculation)) {
       return;
     }
     // If there are no calc fields, do nothing.
-    //if (!$calc_fields = $this->get_calc_fields()) {
     if (!$this->view->views_calc_fields) {
       return;
     }
@@ -209,8 +205,6 @@ class views_calc_table extends views_plugin_style_table {
    */
   function query_total() {
     // Create summary rows.
-    $calc = $this->view->views_calc_calculation;
-    $fields = $this->view->views_calc_fields[$calc];
     
     // Empty out any fields that have been added to the query,
     // we don't need them for the summary totals.
@@ -220,21 +214,24 @@ class views_calc_table extends views_plugin_style_table {
     $this->view->query->orderby = array();
     $this->view->query->groupby = array();
 
-    foreach ($this->view->field as $field) {
-      $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table .'.'. $field->field;
-      $query_alias = $field->field_alias;
-      // Bail if we have a broken handler.
-      if ($query_alias == 'unknown') {
-        continue;
-      }
-      $this->view->query->add_table($field->table, NULL, NULL, $field->table);
-      if (!empty($fields) && in_array($field->field, $fields)) {
-        // Calculated fields.
-        $this->view->query->add_field(NULL, "$calc($query_field)", $query_alias);
-      }
-      else {
-        // Empty fields that have no calculations.
+    $calc_fields = $this->view->views_calc_fields;
+    foreach ($calc_fields as $calc => $fields) {
+      foreach ($this->view->field as $field) {
+        $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table .'.'. $field->field;
+        $query_alias = $field->field_alias;
+        // Bail if we have a broken handler.
+        if ($query_alias == 'unknown') {
+          continue;
+        }
+        $this->view->query->add_table($field->table, NULL, NULL, $field->table);
+        // add all fields
         $this->view->query->add_field(NULL, "NULL", $query_alias);
+        // aggregation functions
+        $ext_alias = $calc.'__'.$query_alias;
+        if (in_array($field->field, $fields)) {
+          // Calculated fields.
+          $this->view->query->add_field(NULL, $calc . '(' . $query_field . ')', $ext_alias);
+        }
       }
     }
     // TODO This won't work right with relationships, need a fix here.

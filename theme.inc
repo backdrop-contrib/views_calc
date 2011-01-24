@@ -191,46 +191,61 @@ function views_calc_table_total(&$vars, $key, $totals) {
   $fields   = &$view->field;
   $columns  = $handler->sanitize_columns($options['columns'], $fields);
 
-    $vars[$key] = array();
-    $added_label = array();
+  $vars[$key] = array();
+  $added_label = array();
 
-    foreach ($view->views_calc_fields as $calc => $calc_fields) {
-      $row = $totals[$calc];
-      foreach ($columns as $field => $column) {
-        $field_alias = $fields[$field]->field_alias;
-        if ($field == $column && empty($fields[$field]->options['exclude'])) {
-          if (in_array($field, $calc_fields)
-            && isset($row->$field_alias)) {
-            // COUNT is always a numeric value, no matter what kind of field it is.
-            if ($calc == 'COUNT') {
-              $vars[$key][$calc][$column] =  $row->$field_alias;
+  // Build a data baserow.
+  $baserow = new StdClass();
+  foreach ($view->field as $field) {
+    $query_alias = $field->field_alias;
+    $baserow->{$query_alias} = $totals->{$query_alias};
+  }
+  // Build aggregation rows, one per function.
+  foreach ($view->views_calc_fields as $calc => $calc_fields) {
+    // Rebuild row as if it where single queries.
+    $row = drupal_clone($baserow);
+    foreach ($view->field as $field) {
+      $query_alias = $field->field_alias;
+      $ext_alias = $calc.'__'.$query_alias;
+      if (in_array($field->field, $calc_fields)) {
+        $row->{$query_alias} = $totals->{$ext_alias};
+      }
+    }
+    // Build row output data.
+    foreach ($columns as $field => $column) {
+      $field_alias = $fields[$field]->field_alias;
+      if ($field == $column && empty($fields[$field]->options['exclude'])) {
+        if (in_array($field, $calc_fields)
+          && isset($row->$field_alias)) {
+          // COUNT is always a numeric value, no matter what kind of field it is.
+          if ($calc == 'COUNT') {
+            $vars[$key][$calc][$column] =  $row->$field_alias;
+          }
+          // Calculations other than COUNT should run the value through the field's theme.
+          // This will allow dates and numeric values to apply the right formatting to the result.
+          else {
+            $vars[$key][$calc][$column] =  $fields[$field]->theme($row);
+          }
+        }
+        else {
+          // Add the calc type label into the first empty column.
+          // Identify which is the sub total and which the grand total
+          // when both are provided.
+          if (empty($added_label[$calc])) {
+            if ($key == 'sub_totals') {
+              $label = t("Page !Calculation", array("!Calculation" => $calc));
             }
-            // Calculations other than COUNT should run the value through the field's theme.
-            // This will allow dates and numeric values to apply the right formatting to the result.
             else {
-              $vars[$key][$calc][$column] =  $fields[$field]->theme($row);
+              $label = t("Total !Calculation", array("!Calculation" => $calc));
             }
-          
+            $vars[$key][$calc][$column] = $label;
+            $added_label[$calc] = TRUE;
           }
           else {
-            // Add the calc type label into the first empty column.
-            // Identify which is the sub total and which the grand total
-            // when both are provided.
-            if (empty($added_label[$calc])) {
-              if ($key == 'sub_totals') {
-                $label = t("Page !Calculation", array("!Calculation" => $calc));
-              }
-              else {
-                $label = t("Total !Calculation", array("!Calculation" => $calc));
-              }
-              $vars[$key][$calc][$column] = $label;
-              $added_label[$calc] = TRUE;
-            }
-            else {
-              $vars[$key][$calc][$column] = '';
-            }
+            $vars[$key][$calc][$column] = '';
           }
         }
       }
     }
+  }
 }
