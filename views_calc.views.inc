@@ -1,47 +1,29 @@
 <?php
 // $Id$
 /**
- * Implementation of hook_views_handlers().
- */
-function views_calc_views_handlers() {
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'views_calc'),
-    ),
-    'handlers' => array(
-      'views_calc_field_handler' => array(
-        'parent' => 'views_handler_field',
-      ),
-      'views_calc_handler_sort' => array(
-        'parent' => 'views_handler_sort',
-       ),
-    ),
-  );
-}
-
-/**
- * Implementation of hook_views_data().
+ * Implements hook_views_data().
  *
  * Add calc fields to views field list.
  */
 function views_calc_views_data() {
   $data = array();
   $results = _views_calc_fields();
-  while($field = db_fetch_array($results)) {
-    $data[$field['base']]['cid'. $field['cid']] = array(
+  foreach ($results as $field) {
+    
+    $data[$field->base['cid' . $field->cid]] = array(
       'group' => t('Views Calc'),
-      'title' => t($field['label']),
-      'help' =>  $field['calc'],
+      'title' => t($field->label),
+      'help' => $field->calc,
       'field' => array(
-        'field' => 'cid'. $field['cid'],
+        'field' => 'cid' . $field->cid,
         'table' => 'node',
         'handler' => 'views_calc_field_handler',
         'click sortable' => TRUE,
         'allow empty' => TRUE,
-        'cid'     => $field['cid'],
-        'format'  => $field['format'],
-        'custom'  => $field['custom'],
-        'calc'  => $field['calc'],
+        'cid' => $field->cid,
+        'format' => $field->format,
+        'custom' => $field->custom,
+        'calc' => $field->calc,
       ),
       'sort' => array(
         'handler' => 'views_calc_handler_sort',
@@ -52,12 +34,12 @@ function views_calc_views_data() {
 }
 
 /**
- * Implementation of hook_views_plugins
+ * Implements hook_views_plugins().
  */
 function views_calc_views_plugins() {
   $path = drupal_get_path('module', 'views_calc');
   $views_path = drupal_get_path('module', 'views');
-  require_once "./$path/theme.inc";
+  require_once DRUPAL_ROOT . '/' . "./$path/theme.inc";
 
   $data = array(
     'module' => 'views_calc', // This just tells our themes are elsewhere.
@@ -78,7 +60,7 @@ function views_calc_views_plugins() {
         'type' => 'normal',
         'even empty' => FALSE,
       ),
-    )
+    ),
   );
   return $data;
 }

@@ -11,7 +11,8 @@
 /**
  * Theme the form for the table style plugin
  */
-function theme_views_calc_ui_table($form) {
+function theme_views_calc_ui_table($variables) {
+  $form = $variables['form'];
   $output = drupal_render($form['description_markup']);
 
   $header = array(
@@ -33,7 +34,7 @@ function theme_views_calc_ui_table($form) {
   foreach (element_children($form['columns']) as $id) {
     $row = array();
     $row[] = drupal_render($form['info'][$id]['name']);
-    $row[] = drupal_render($form['info'][$id]['justification']);
+    $row[] = drupal_render($form['info'][$id]['align']);
     $row[] = drupal_render($form['info'][$id]['has_calc']) . drupal_render($form['info'][$id]['calc']);
     $row[] = drupal_render($form['columns'][$id]);
     $row[] = drupal_render($form['info'][$id]['separator']);
@@ -55,10 +56,13 @@ function theme_views_calc_ui_table($form) {
   }
 
   // Add the special 'None' row.
-  $rows[] = array(t('None'), '', '', '', '', array('align' => 'center', 'data' => drupal_render($form['default'][-1])));
+  $rows[] = array(t('None'), '', '', '', '', array(
+      'align' => 'center',
+      'data' => drupal_render($form['default'][-1]),
+    ));
 
-  $output .= theme('table', $header, $rows);
-  $output .= drupal_render($form);
+  $output .= theme('table', array('header' => $header, 'rows' => $rows));
+  $output .= drupal_render_children($form);
   return $output;
 }
 
@@ -72,28 +76,28 @@ function template_preprocess_views_calc_table(&$vars) {
     $vars['rows'] = array();
     return;
   }
-  
-  drupal_add_css(drupal_get_path('module', 'views_calc') .'/views_calc.css');
-  
+
+  drupal_add_css(drupal_get_path('module', 'views_calc') . '/views_calc.css');
+
   // We need the raw data for this grouping, which is passed in as $vars['rows'].
   // However, the template also needs to use for the rendered fields.  We
   // therefore swap the raw data out to a new variable and reset $vars['rows']
   // so that it can get rebuilt.
   $result   = $vars['rows'];
   $vars['rows'] = array();
-    
+
   $options  = $view->style_plugin->options;
   $handler  = $view->style_plugin;
   $vars['options'] = $options;
   $hide_details = $options['detailed_values'];
-  
+
   $fields   = &$view->field;
   $columns  = $handler->sanitize_columns($options['columns'], $fields);
 
   $active   = !empty($handler->active) ? $handler->active : '';
   $order    = !empty($handler->order) ? $handler->order : 'asc';
 
-  $query    = tablesort_get_querystring();
+  $query    = tablesort_get_query_parameters();
   if ($query) {
     $query = '&' . $query;
   }
@@ -113,7 +117,7 @@ function template_preprocess_views_calc_table(&$vars) {
           $initial = 'desc';
         }
 
-        $image = theme('tablesort_indicator', $initial);
+        $image = theme('tablesort_indicator', array('style' => $initial));
         $title = t('sort by @s', array('@s' => $label));
         $link_options = array(
           'html' => true,
@@ -126,7 +130,7 @@ function template_preprocess_views_calc_table(&$vars) {
 
     // Create a second variable so we can easily find what fields we have and what the
     // CSS classes should be.
-    $vars['fields'][$field] = views_css_safe($field);
+    $vars['fields'][$field] = drupal_clean_css_identifier($field);
     if ($active == $field) {
       $vars['fields'][$field] .= ' active';
     }
@@ -165,8 +169,8 @@ function template_preprocess_views_calc_table(&$vars) {
   // Add totals.
   $vars['totals'] = array();
   $vars['sub_totals'] = array();
-  if ($view->total_rows > $view->pager['items_per_page']
-    && $view->sub_totals) {
+  if ($view->query->pager->get_total_items() > $view->get_items_per_page()
+      && $view->sub_totals) {
     views_calc_table_total($vars, 'sub_totals', $view->sub_totals);
   }
   if ($view->totals) {
@@ -185,6 +189,7 @@ function template_preprocess_views_calc_table(&$vars) {
  * Build total var line.
  */
 function views_calc_table_total(&$vars, $key, $totals) {
+
   $view = $vars['view'];
   $options  = $view->style_plugin->options;
   $handler  = $view->style_plugin;
@@ -193,30 +198,50 @@ function views_calc_table_total(&$vars, $key, $totals) {
 
   $vars[$key] = array();
   $added_label = array();
-
-  // Build a data baserow.
+  // Build a data baserow with the default fields of the view
+  // Grundstruktur für normale viewszeile erstellen
   $baserow = new StdClass();
   foreach ($view->field as $field) {
-    $query_alias = $field->field_alias;
+    if (isset($field->aliases['entity_type'])) {
+      $query_alias = $field->aliases['entity_type'];
+    }
+    else {
+      $query_alias = $field->field_alias;
+    }
     $baserow->{$query_alias} = $totals->{$query_alias};
   }
   // Build aggregation rows, one per function.
   foreach ($view->views_calc_fields as $calc => $calc_fields) {
     // Rebuild row as if it where single queries.
-    $row = drupal_clone($baserow);
+    $row = clone $baserow;
+    // Zeile mit aggregationswerten füllen
+
     foreach ($view->field as $field) {
-      $query_alias = $field->field_alias;
-      $ext_alias = $calc.'__'.$query_alias;
+      if (isset($field->aliases['entity_type'])) {
+        $query_alias = $field->aliases['entity_type'];
+      }
+      else {
+        $query_alias = $field->field_alias;
+      }
+      $ext_alias = strtolower($calc) . '__' . $query_alias;
       if (in_array($field->field, $calc_fields)) {
         $row->{$query_alias} = $totals->{$ext_alias};
       }
     }
     // Build row output data.
     foreach ($columns as $field => $column) {
-      $field_alias = $fields[$field]->field_alias;
+      //$field_alias = $fields[$field]->field_alias;
+      if ((array_key_exists('entity_type',$fields[$field]->aliases))
+      && isset($fields[$field]->aliases['entity_type'])) {
+        //$field_alias = strtolower($calc) . '__' . $fields[$field]->aliases['entity_type'];
+        $field_alias = $fields[$field]->aliases['entity_type'];
+      }
+      else {
+        $field_alias = $fields[$field]->field_alias;
+      }
       if ($field == $column && empty($fields[$field]->options['exclude'])) {
-        if (in_array($field, $calc_fields)
-          && isset($row->$field_alias)) {
+        // process only calculated fields
+        if (in_array($field, $calc_fields) && isset($row->$field_alias)) {
           // COUNT is always a numeric value, no matter what kind of field it is.
           if ($calc == 'COUNT') {
             $vars[$key][$calc][$column] =  $row->$field_alias;
@@ -224,7 +249,8 @@ function views_calc_table_total(&$vars, $key, $totals) {
           // Calculations other than COUNT should run the value through the field's theme.
           // This will allow dates and numeric values to apply the right formatting to the result.
           else {
-            $vars[$key][$calc][$column] =  $fields[$field]->theme($row);
+            // TODO: Theme the output, see comment above and behind the statement
+            $vars[$key][$calc][$column] = $row->$field_alias;//$fields[$field]->theme($row);
           }
         }
         else {

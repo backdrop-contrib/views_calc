@@ -1,31 +1,80 @@
 <?php
 // $Id$
 /**
- * Implementation of hook_schema().
+ * @file
+ * Install, update and uninstall functions for the views_calc module.
+ *
+ */
+
+/**
+ * Implements hook_schema().
  */
 function views_calc_schema() {
   $schema['views_calc_fields'] = array(
     'fields' => array(
-      'cid' => array('type' => 'serial', 'not null' => TRUE, 'disp-width' => '10'),
-      'label' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
-      'format' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
-      'custom' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
-      'base' => array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => ''),
-      'tablelist' => array('type' => 'text', 'not null' => TRUE),
-      'fieldlist' => array('type' => 'text', 'not null' => TRUE),
-      'calc' => array('type' => 'text', 'not null' => TRUE),
+      'cid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'disp-width' => '10',
       ),
+      'label' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'format' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'custom' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'base' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'tablelist' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'fieldlist' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'calc' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+    ),
     'primary key' => array('cid'),
     'indexes' => array(
-      'cid' => array('cid'))
+      'cid' => array('cid'),
+    ),
   );
   return $schema;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function views_calc_install() {
-  drupal_install_schema('views_calc');
+  // TODO The drupal_(un)install_schema functions are called automatically in D7.
+  // drupal_install_schema('views_calc')
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function views_calc_uninstall() {
   db_query("DROP TABLE {views_calc_fields}");
 
@@ -41,12 +90,12 @@ function views_calc_uninstall() {
  */
 function views_calc_update_1() {
   $ret = array();
-  include_once(drupal_get_path('module', 'views') .'/views.module');
-  include_once(drupal_get_path('module', 'views_calc') .'/views_calc.module');
-  $view_calcs = (array) variable_get('views_calc_vid','');
+  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views') . '/views.module';
+  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views_calc') . '/views_calc.module';
+  $view_calcs = (array) variable_get('views_calc_vid', '');
   foreach ($view_calcs as $view_id) {
     if ($view = views_get_view($view_id)) {
-      $cols = (array) variable_get('views_calc_'. $view->vid .'_col','');
+      $cols = (array) variable_get('views_calc_' . $view->vid . '_col', '');
       $new_cols = array();
       foreach ($cols as $col) {
         foreach ($view->field as $field) {
@@ -55,8 +104,8 @@ function views_calc_update_1() {
           }
         }
       }
-      variable_set('views_calc_'. $view->vid .'_col', $new_cols);
-      $rows = (array) variable_get('views_calc_'. $view->vid. '_row','');
+      variable_set('views_calc_' . $view->vid . '_col', $new_cols);
+      $rows = (array) variable_get('views_calc_' . $view->vid . '_row', '');
       $new_rows = array();
       foreach ($rows as $row) {
         foreach ($view->field as $field) {
@@ -65,8 +114,8 @@ function views_calc_update_1() {
           }
         }
       }
-      variable_set('views_calc_'. $view->vid .'_row', $new_rows);
-      $col_calc   = (array) variable_get('views_calc_'.$view->vid.'_col_calc','');
+      variable_set('views_calc_' . $view->vid . '_row', $new_rows);
+      $col_calc   = (array) variable_get('views_calc_' . $view->vid . '_col_calc', '');
       foreach ($col_calc as $calc) {
         if ($calc == 'AVERAGE') {
           $new_calcs[] = 'AVG';
@@ -75,8 +124,8 @@ function views_calc_update_1() {
           $new_calcs[] = $calc;
         }
       }
-      variable_set('views_calc_'. $view->vid .'_col_calc', $new_calcs);
-      $row_calc   = (array) variable_get('views_calc_'.$view->vid.'_row_calc','');
+      variable_set('views_calc_' . $view->vid . '_col_calc', $new_calcs);
+      $row_calc   = (array) variable_get('views_calc_' . $view->vid . '_row_calc', '');
       foreach ($row_calc as $calc) {
         if ($calc == 'AVERAGE') {
           $new_calcs[] = 'AVG';
@@ -85,10 +134,13 @@ function views_calc_update_1() {
           $new_calcs[] = $calc;
         }
       }
-      variable_set('views_calc_'. $view->vid .'_row_calc', $new_calcs);
+      variable_set('views_calc_' . $view->vid . '_row_calc', $new_calcs);
     }
   }
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
 /**
@@ -101,7 +153,8 @@ function views_calc_update_2() {
   switch ($db_type) {
     case 'mysql':
     case 'mysqli':
-      $ret[] = update_sql("CREATE TABLE if not exists {views_calc_fields} (
+      // TODO update_sql has been removed. Use the database API for any schema or data changes.
+      $ret[] = array() /* update_sql("CREATE TABLE if not exists {views_calc_fields} (
         cid int(10) unsigned NOT NULL default '0',
         label varchar(255),
         format varchar(255),
@@ -110,10 +163,11 @@ function views_calc_update_2() {
         fieldlist text,
         calc text,
         KEY (cid)
-      ) /*!40100 DEFAULT CHARACTER SET utf8 */");
+      ) !40100 DEFAULT CHARACTER SET utf8 ") */;
       break;
     case 'postgres':
-      $ret[] = update_sql("CREATE TABLE if not exists {views_calc_fields} (
+      // TODO update_sql has been removed. Use the database API for any schema or data changes.
+      $ret[] = array() /* update_sql("CREATE TABLE if not exists {views_calc_fields} (
         cid int(10) unsigned NOT NULL default '0',
         label varchar(255),
         format varchar(255),
@@ -122,14 +176,24 @@ function views_calc_update_2() {
         fieldlist text,
         calc text,
         KEY (cid)
-      ) ");
-     break;
+      ) ") */;
+      break;
   }
-  return $ret;
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function views_calc_update_6000() {
   $ret = array();
-  db_add_field($ret, 'views_calc_fields', 'base', array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => 'node'));
-  return $ret;
+  db_add_field('views_calc_fields', 'base', array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => 'node'));
+  // hook_update_N() no longer returns a $ret array. Instead, return
+  // nothing or a translated string indicating the update ran successfully.
+  // See http://drupal.org/node/224333#update_sql.
+  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
 }
