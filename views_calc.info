@@ -1,4 +1,3 @@
-; $Id$
 name = Views Calc
 description = This module will allow you to add calculated fields to views tables and compute columns of numeric data in a views table.
 core = 7.x

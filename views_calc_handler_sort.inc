@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Sort handler for views_calc module.

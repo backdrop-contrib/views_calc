@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Copied from the table style plugin.
