@@ -216,7 +216,7 @@ function views_calc_fields_form($form, &$form_state) {
 
   // display current views calcs fields
   $fields = _views_calc_fields();
-  while ($field = db_fetch_array($fields)) {
+  foreach ($fields as $field) {
     $form[] = views_calc_field_form_item($i, $field, $substitutions);
     $i++;
   }
@@ -477,7 +477,7 @@ function views_calc_export_form($form, &$form_state) {
 
   $fields = _views_calc_fields();
   $string = '';
-  while ($field = db_fetch_array($fields)) {
+  foreach ($fields as $field) {
     $base = $field['base'];
     $substitutions = _views_calc_substitutions($base);
     $field['calc'] = strtr($field['calc'], $substitutions);
