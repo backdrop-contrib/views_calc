@@ -111,41 +111,74 @@ function template_preprocess_views_calc_table(&$vars) {
   $order    = !empty($handler->order) ? $handler->order : 'asc';
 
   $query    = tablesort_get_query_parameters();
-  if ($query) {
-    $query = '&' . $query;
+
+  if (isset($view->exposed_raw_input)) {
+    $query += $view->exposed_raw_input;
   }
 
   // Render the header labels.
   foreach ($columns as $field => $column) {
-    if ($field == $column && empty($fields[$field]->options['exclude'])) {
-      $label = check_plain(!empty($fields[$field]) ? $fields[$field]->label() : '');
-      if (empty($options['info'][$field]['sortable'])) {
-        $vars['header'][$field] = $label;
-      }
-      else {
-        // @todo -- make this a setting
-        $initial = 'asc';
-
-        if ($active == $field && $order == 'asc') {
-          $initial = 'desc';
-        }
-
-        $image = theme('tablesort_indicator', array('style' => $initial));
-        $title = t('sort by @s', array('@s' => $label));
-        $link_options = array(
-          'html' => true,
-          'attributes' => array('title' => $title),
-          'query' => 'order=' . urlencode($field) . '&sort=' . $initial . $query,
-        );
-        $vars['header'][$field] = l($label . $image, $_GET['q'], $link_options);
-      }
-    }
-
     // Create a second variable so we can easily find what fields we have and what the
     // CSS classes should be.
     $vars['fields'][$field] = drupal_clean_css_identifier($field);
     if ($active == $field) {
       $vars['fields'][$field] .= ' active';
+    }
+
+    // render the header labels
+    if ($field == $column && empty($fields[$field]->options['exclude'])) {
+      $label = check_plain(!empty($fields[$field]) ? $fields[$field]->label() : '');
+      if (empty($options['info'][$field]['sortable']) || !$fields[$field]->click_sortable()) {
+        $vars['header'][$field] = $label;
+      }
+      else {
+        $initial = !empty($options['info'][$field]['default_sort_order']) ? $options['info'][$field]['default_sort_order'] : 'asc';
+
+        if ($active == $field) {
+          $initial = ($order == 'asc') ? 'desc' : 'asc';
+        }
+
+        $image = theme('tablesort_indicator', array('style' => $initial));
+        $title = t('sort by @s', array('@s' => $label));
+        if ($active == $field) {
+          $label .= theme('tablesort_indicator', array('style' => $initial));
+        }
+
+        $query['order'] = $field;
+        $query['sort'] = $initial;
+        $link_options = array(
+          'html' => true,
+          'attributes' => array('title' => $title),
+          'query' => $query,
+        );
+        $vars['header'][$field] = l($label, $_GET['q'], $link_options);
+      }
+      $vars['header_classes'][$field] = '';
+      // Set up the header label class.
+      if ($fields[$field]->options['element_default_classes']) {
+        $vars['header_classes'][$field] .= "views-field views-field-" . $vars['fields'][$field];
+      }
+      $class = $fields[$field]->element_label_classes(0);
+      if ($class) {
+        if ($vars['header_classes'][$field]) {
+          $vars['header_classes'][$field] .= ' ';
+        }
+        $vars['header_classes'][$field] .= $class;
+      }
+
+      // Add a header label wrapper if one was selected.
+      if ($vars['header'][$field]) {
+        $element_label_type = $fields[$field]->element_label_type(TRUE, TRUE);
+        if ($element_label_type) {
+          $vars['header'][$field] = '<' . $element_label_type . '>' . $vars['header'][$field] . '</' . $element_label_type . '>';
+        }
+      }
+
+    }
+
+    // Add a CSS align class to each field if one was set
+    if (!empty($options['info'][$field]['align'])) {
+      $vars['fields'][$field] .= ' ' . drupal_clean_css_identifier($options['info'][$field]['align']);
     }
   }
 
