@@ -12,4 +12,3 @@ files[] = views_calc.module
 files[] = views_calc.views.inc
 files[] = views_calc_field_handler.inc
 files[] = views_calc_handler_sort.inc
-files[] = views_calc_plugin_style_chart.inc

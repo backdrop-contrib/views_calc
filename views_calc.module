@@ -372,11 +372,9 @@ function views_calc_fields_form_submit($form, &$form_state) {
     if (empty($value['calc'])) {
       // remove blank fields, don't save them
       if (!empty($value['cid'])) {
-        // TODO Please review the conversion of this statement to the D7 database API syntax.
-        /* db_query("DELETE FROM {views_calc_fields} WHERE cid=%d", $value['cid']) */
         db_delete('views_calc_fields')
-  ->condition('cid', $value['cid'])
-  ->execute();
+          ->condition('cid', $value['cid'])
+          ->execute();
       }
     }
     else {

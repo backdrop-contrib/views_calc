@@ -248,7 +248,6 @@ function views_calc_table_total(&$vars, $key, $totals) {
   $vars[$key] = array();
   $added_label = array();
   // Build a data baserow with the default fields of the view
-  // Grundstruktur für normale viewszeile erstellen
   $baserow = new StdClass();
   foreach ($view->field as $field) {
     if (isset($field->aliases['entity_type'])) {
@@ -278,10 +277,8 @@ function views_calc_table_total(&$vars, $key, $totals) {
     }
     // Build row output data.
     foreach ($columns as $field => $column) {
-      //$field_alias = $fields[$field]->field_alias;
       if ((array_key_exists('entity_type', $fields[$field]->aliases))
       && isset($fields[$field]->aliases['entity_type'])) {
-        //$field_alias = strtolower($calc) . '__' . $fields[$field]->aliases['entity_type'];
         $field_alias = $fields[$field]->aliases['entity_type'];
       }
       else {
