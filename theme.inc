@@ -33,7 +33,6 @@ function theme_views_calc_ui_table($variables) {
       'data' => t('Default sort order'),
       'align' => 'center',
     ),
-    t('Hide empty column'),
   );
 
   $rows = array();
@@ -63,7 +62,10 @@ function theme_views_calc_ui_table($variables) {
       $row[] = '';
       $row[] = '';
     }
-    $row[] = drupal_render($form['info'][$id]['empty_column']);
+    // Remove the option to hide empty columns.
+    // This may create problems since we need to know what
+    // the columns are for the summary queries.
+    unset($form['info'][$id]['empty_column']);
     $rows[] = $row;
   }
 
@@ -71,7 +73,7 @@ function theme_views_calc_ui_table($variables) {
   $rows[] = array(t('None'), '', '', '', '', '', array(
       'align' => 'center',
       'data' => drupal_render($form['default'][-1]),
-    ), '', '');
+    ), '');
 
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
 
