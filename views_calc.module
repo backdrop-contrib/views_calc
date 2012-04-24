@@ -486,9 +486,9 @@ function views_calc_export_form($form, &$form_state) {
   $fields = _views_calc_fields();
   $string = '';
   foreach ($fields as $field) {
-    $base = $field['base'];
+    $base = $field->base;
     $substitutions = _views_calc_substitutions($base);
-    $field['calc'] = strtr($field['calc'], $substitutions);
+    $field->calc = strtr($field->calc, $substitutions);
     $string .= "\$fields[] = " . var_export((array) $field, TRUE) . ";\n";
   }
 
