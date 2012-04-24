@@ -8,14 +8,13 @@ function views_calc_views_data() {
   $data = array();
   $results = _views_calc_fields();
   foreach ($results as $field) {
-    
-    $data[$field->base['cid' . $field->cid]] = array(
+    $data[$field->base]['cid' . $field->cid] = array(
       'group' => t('Views Calc'),
       'title' => t($field->label),
       'help' => $field->calc,
       'field' => array(
         'field' => 'cid' . $field->cid,
-        'table' => 'node',
+        'table' => $field->base,
         'handler' => 'views_calc_field_handler',
         'click sortable' => TRUE,
         'allow empty' => TRUE,

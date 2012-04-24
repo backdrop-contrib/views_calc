@@ -442,7 +442,10 @@ function views_calc_views_fetch_fields($base, $type) {
  *  Field substitutions for calculations.
  */
 function _views_calc_substitutions($base = 'node') {
-  $fields = views_calc_views_fetch_fields($base, 'field');
+  // We retrieve fields of type 'filter' instead of 'field'
+  // because filters have the actual table columns we might
+  // do calculations on, while fields may have only a nid.
+  $fields = views_calc_views_fetch_fields($base, 'filter');
   $substitutions['node.nid'] = '%Node.nid';
   $substitutions['node.uid'] = '%Node.uid';
   foreach ($fields as $key => $field) {
