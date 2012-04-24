@@ -205,13 +205,17 @@ function views_calc_fields_form($form, &$form_state) {
   foreach ($base_tables as $base => $data) {
     $base_subs = _views_calc_substitutions($base);
     $substitutions += $base_subs;
+
     $fieldset = array(
       '#title' => t('Base table: !name', array('!name' => t($data['title']))),
       '#value' => theme('item_list', array('items' => $base_subs)),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
+	     '#attributes' => array(),
+      '#children' => '',
     );
-    $help .= theme('fieldset', $fieldset);
+    $help .= theme('fieldset', array('element' => $fieldset));
+    //$help .= theme('fieldset', $fieldset);
   }
 
   // display current views calcs fields
@@ -238,15 +242,16 @@ function views_calc_fields_form($form, &$form_state) {
  * A form element for an individual calculated field.
  */
 function views_calc_field_form_item($i, $field, $substitutions) {
+
   if (empty($field)) {
-    $field = array(
-      'cid' => 0,
-      'label' => '',
-      'tablelist' => '',
-      'calc' => '',
-      'format' => '',
-      'custom' => '',
-    );
+    $field = new stdClass();
+    $field->cid = 0;
+    $field->label = '';
+    $field->tablelist = '';
+    $field->calc = '';
+    $field->format = '';
+    $field->custom = '';
+
   }
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views') . '/includes/admin.inc';
   $options = array();
@@ -257,49 +262,49 @@ function views_calc_field_form_item($i, $field, $substitutions) {
   $form['group'][$i] = array(
     '#type' => 'fieldset',
     '#tree' => TRUE,
-    '#title' => t('Field: ') . !empty($field['label']) ? $field['label'] : t('New'),
+    '#title' => t('Field: ') . !empty($field->label) ? $field->label : t('New'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
   );
   $form['group'][$i]['cid'] = array(
     '#type' => 'hidden',
-    '#value' => intval($field['cid']),
+    '#value' => intval($field->cid),
   );
   $form['group'][$i]['tablelist'] = array(
     '#type' => 'hidden',
-    '#value' => $field['tablelist'],
+    '#value' => $field->tablelist,
   );
   $form['group'][$i]['base'] = array(
     '#type' => 'select',
     '#title' => t('Base table'),
     '#options' => $options,
-    '#default_value' => !empty($field['base']) && array_key_exists($field['base'], $options) ? $field['base'] : 'node',
+    '#default_value' => !empty($field->base) && array_key_exists($field->base, $options) ? $field->base : 'node',
     '#description' => t('The base table for this field.'),
   );
   $form['group'][$i]['label'] = array(
     '#type' => 'textfield',
     '#title' => t('Label'),
     '#field_prefix' => 'ViewsCalc: ',
-    '#default_value' => str_replace('ViewsCalc: ', '', $field['label']),
+    '#default_value' => str_replace('ViewsCalc: ', '', $field->label),
     '#description' => t('The views field name for this field (i.e. Views Calc: My Calculation).'),
   );
   $form['group'][$i]['calc'] = array(
     '#type' => 'textarea',
     '#title' => t('Calculation'),
-    '#default_value' => strtr($field['calc'], $substitutions),
+    '#default_value' => strtr($field->calc, $substitutions),
     '#description' => t("<p>The query operation to be performed, using numbers, field substitutions, and " . implode(' ', _views_calc_operators()) . ". Leave spaces between parentheses and field names, i.e. 'CONCAT( %field1, ' ', %field2 )'. <strong>" . t('Note that all fields must be from the base table selected above! You cannot combine fields from different base tables.') . "</strong></p>"),
   );
   $form['group'][$i]['format'] = array(
     '#type' => 'select',
     '#title' => t('Format'),
-    '#default_value' => $field['format'],
+    '#default_value' => $field->format,
     '#options' => drupal_map_assoc(array_keys(_views_calc_format_options())),
     '#description' => t('The format of the result of this calculation.'),
   );
   $form['group'][$i]['custom'] = array(
     '#type' => 'textfield',
     '#title' => t('Custom function'),
-    '#default_value' => $field['custom'],
+    '#default_value' => $field->custom,
     '#description' => t('The function to call for a custom format.'),
   );
   return $form;
