@@ -237,6 +237,7 @@ function template_preprocess_views_calc_table(&$vars) {
 function views_calc_table_total(&$vars, $key, $totals) {
 
   $view = $vars['view'];
+
   $options  = $view->style_plugin->options;
   $handler  = $view->style_plugin;
   $fields   = &$view->field;
@@ -260,7 +261,6 @@ function views_calc_table_total(&$vars, $key, $totals) {
   foreach ($view->views_calc_fields as $calc => $calc_fields) {
     // Rebuild row as if it where single queries.
     $row = clone $baserow;
-    // Zeile mit aggregationswerten füllen
 
     foreach ($view->field as $field) {
       if (isset($field->aliases['entity_type'])) {
@@ -277,7 +277,7 @@ function views_calc_table_total(&$vars, $key, $totals) {
     // Build row output data.
     foreach ($columns as $field => $column) {
       //$field_alias = $fields[$field]->field_alias;
-      if ((array_key_exists('entity_type',$fields[$field]->aliases))
+      if ((array_key_exists('entity_type', $fields[$field]->aliases))
       && isset($fields[$field]->aliases['entity_type'])) {
         //$field_alias = strtolower($calc) . '__' . $fields[$field]->aliases['entity_type'];
         $field_alias = $fields[$field]->aliases['entity_type'];
@@ -286,17 +286,37 @@ function views_calc_table_total(&$vars, $key, $totals) {
         $field_alias = $fields[$field]->field_alias;
       }
       if ($field == $column && empty($fields[$field]->options['exclude'])) {
-        // process only calculated fields
+        // Process only calculated, non-excluded fields.
         if (in_array($field, $calc_fields) && isset($row->$field_alias)) {
-          // COUNT is always a numeric value, no matter what kind of field it is.
+
           if ($calc == 'COUNT') {
-            $vars[$key][$calc][$column] =  $row->$field_alias;
+
+            // COUNT is always a numeric value, no matter what kind of field it is.
+
+            $vars[$key][$calc][$column] =  number_format($row->$field_alias, 0, 0, ',');
           }
-          // Calculations other than COUNT should run the value through the field's theme.
-          // This will allow dates and numeric values to apply the right formatting to the result.
           else {
-            // TODO: Theme the output, see comment above and behind the statement
-            $vars[$key][$calc][$column] = $row->$field_alias;//$fields[$field]->theme($row);
+
+            // Calculations other than COUNT should run the value through the field's theme.
+            // This will allow dates and numeric values to apply the right formatting to the result.
+            // Unfortunately, there seems to be no easy way to push an arbitrary value through
+            // the field theme. The theme may be retrieving its value from the cached entity.
+            // We would like to do $fields[$field]->theme($row), but that won't work.
+
+            // If this is a numeric field, get its options. We can at least use that in the aggregation.
+            // The settings we need are in ->options['settings'] for fields created by the field module,
+            // and in ->options for other fields that are based on the numeric field handler.
+            if (isset($fields[$field]->field_info)) {
+              $separator = !empty($fields[$field]->options['settings']['thousands_separator']) ? $fields[$field]->options['settings']['thousands_separator'] : $options['separator'];
+              $$decimal = !empty($fields[$field]->options['settings']['decimal_separator']) ? $fields[$field]->options['settings']['decimal_separator'] : $options['decimal'];
+              $precision = !empty($fields[$field]->options['settings']['scale']) ? $fields[$field]->options['settings']['scale'] : $options['precision'];
+            }
+            else {
+              $separator = !empty($fields[$field]->options['separator']) ? $fields[$field]->options['separator'] : $options['separator'];
+              $decimal = !empty($fields[$field]->options['decimal']) ? $fields[$field]->options['decimal'] : $options['decimal'];
+              $precision = !empty($fields[$field]->options['precision']) ? $fields[$field]->options['precision'] : $options['precision'];
+            }
+            $vars[$key][$calc][$column] = number_format($row->$field_alias, $precision, $decimal, $separator);
           }
         }
         else {

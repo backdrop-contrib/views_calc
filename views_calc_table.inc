@@ -18,6 +18,9 @@ class views_calc_table extends views_plugin_style_table {
     $options = parent::option_definition();
 
     $options['detailed_values'] = array('default' => 0);
+    $options['precision'] = array('default' => 0);
+    $options['decimal'] = array('default' => '.', 'translatable' => TRUE);
+    $options['separator'] = array('default' => ',', 'translatable' => TRUE);
     $options['info'] = array('default' => array());
     return $options;
   }
@@ -63,6 +66,37 @@ class views_calc_table extends views_plugin_style_table {
         ),
       );
     }
+
+    $form['precision'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Default precision'),
+      '#default_value' => $this->options['precision'],
+      '#description' => t('Specify how many digits to print after the decimal point in calculated values, if not specified in the field settings.'),
+      '#dependency' => array('edit-options-set-precision' => array(TRUE)),
+      '#size' => 2,
+    );
+    $form['decimal'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Default decimal point'),
+      '#default_value' => $this->options['decimal'],
+      '#description' => t('What single character to use as a decimal point in calculated values, if not specified in the field settings.'),
+      '#size' => 2,
+    );
+    $form['separator'] = array(
+      '#type' => 'select',
+      '#title' => t('Default thousands marker'),
+      '#options' => array(
+        '' => t('- None -'),
+        ',' => t('Comma'),
+        ' ' => t('Space'),
+        '.' => t('Decimal'),
+        '\'' => t('Apostrophe'),
+      ),
+      '#default_value' => $this->options['separator'],
+      '#description' => t('What single character to use as the thousands separator in calculated values, if not specified in the field settings.'),
+      '#size' => 2,
+    );
+
   }
 
   /**
@@ -163,6 +197,7 @@ class views_calc_table extends views_plugin_style_table {
         $this->view->totals = array_shift($summary_view->result);
       }
     }
+
   }
 
   /**
@@ -181,13 +216,12 @@ class views_calc_table extends views_plugin_style_table {
     $calc_fields = $view->views_calc_fields;
     foreach ($calc_fields as $calc => $fields) {
       foreach ($view->field as $field) {
-        // read out the correct value field of the corresponding field_data_ table
-        // for fields in node table we can use the ->field_alias member
-        if (isset($field->additional_fields[4])) {
-          $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table . '.' . $field->additional_fields[4];
+        // Is this a field or a property?
+        if (!empty($field->field_info)) {
+          $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table . '.' . $field->real_field;
         }
         else {
-          $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table . '.' . $field->field_alias;
+          $query_field = substr($field->field, 0, 3) == 'cid' ? $field->definition['calc'] : $field->table_alias . '.' . $field->real_field;
         }
         if (isset($field->aliases['entity_type'])) {
           $query_alias = $field->aliases['entity_type'];
