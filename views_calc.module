@@ -455,7 +455,10 @@ function _views_calc_substitutions($base = 'node') {
  * Views calc fields result object.
  */
 function _views_calc_fields() {
-  return db_query("SELECT * FROM {views_calc_fields}");
+  $query = db_select('views_calc_fields', 'vcf');
+  $query->fields('vcf', array('cid', 'label', 'calc', 'tablelist', 'format', 'custom'));
+  $query->execute();
+  return $query;
 }
 
 /**
