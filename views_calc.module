@@ -215,7 +215,6 @@ function views_calc_fields_form($form, &$form_state) {
       '#children' => '',
     );
     $help .= theme('fieldset', array('element' => $fieldset));
-    //$help .= theme('fieldset', $fieldset);
   }
 
   // display current views calcs fields
@@ -248,9 +247,11 @@ function views_calc_field_form_item($i, $field, $substitutions) {
     $field->cid = 0;
     $field->label = '';
     $field->tablelist = '';
+    $field->fieldlist = '';
     $field->calc = '';
     $field->format = '';
     $field->custom = '';
+    $field->base = '';
 
   }
   require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views') . '/includes/admin.inc';
@@ -461,9 +462,9 @@ function _views_calc_substitutions($base = 'node') {
  */
 function _views_calc_fields() {
   $query = db_select('views_calc_fields', 'vcf');
-  $query->fields('vcf', array('cid', 'label', 'calc', 'tablelist', 'format', 'custom'));
-  $query->execute();
-  return $query;
+  $query->fields('vcf', array('cid', 'label', 'calc', 'tablelist', 'fieldlist', 'format', 'custom', 'base'));
+  $result = $query->execute();
+  return $result;
 }
 
 /**

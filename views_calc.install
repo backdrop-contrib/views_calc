@@ -62,17 +62,13 @@ function views_calc_schema() {
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_install();
  */
 function views_calc_install() {
-  // TODO The drupal_(un)install_schema functions are called automatically in D7.
-  // drupal_install_schema('views_calc')
 }
 
 /**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Implements hook_uninstall().
  */
 function views_calc_uninstall() {
   db_query("DROP TABLE {views_calc_fields}");
@@ -81,118 +77,17 @@ function views_calc_uninstall() {
 }
 
 /**
- * Convert the queryname stored in the variable to the fullname
- * so we can access both the fieldname and the tablename from
- * the selections.
- *
- * Change the calc 'AVERAGE' to 'AVG' to match the db function.
+ * Implements hook_update_last_removed().
  */
-function views_calc_update_1() {
-  $ret = array();
-  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views') . '/views.module';
-  include_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views_calc') . '/views_calc.module';
-  $view_calcs = (array) variable_get('views_calc_vid', '');
-  foreach ($view_calcs as $view_id) {
-    if ($view = views_get_view($view_id)) {
-      $cols = (array) variable_get('views_calc_' . $view->vid . '_col', '');
-      $new_cols = array();
-      foreach ($cols as $col) {
-        foreach ($view->field as $field) {
-          if ($field['queryname'] == $col) {
-            $new_cols[] = $field['fullname'];
-          }
-        }
-      }
-      variable_set('views_calc_' . $view->vid . '_col', $new_cols);
-      $rows = (array) variable_get('views_calc_' . $view->vid . '_row', '');
-      $new_rows = array();
-      foreach ($rows as $row) {
-        foreach ($view->field as $field) {
-          if ($field['queryname'] == $col) {
-            $new_rows[] = $field['fullname'];
-          }
-        }
-      }
-      variable_set('views_calc_' . $view->vid . '_row', $new_rows);
-      $col_calc   = (array) variable_get('views_calc_' . $view->vid . '_col_calc', '');
-      foreach ($col_calc as $calc) {
-        if ($calc == 'AVERAGE') {
-          $new_calcs[] = 'AVG';
-        }
-        else {
-          $new_calcs[] = $calc;
-        }
-      }
-      variable_set('views_calc_' . $view->vid . '_col_calc', $new_calcs);
-      $row_calc   = (array) variable_get('views_calc_' . $view->vid . '_row_calc', '');
-      foreach ($row_calc as $calc) {
-        if ($calc == 'AVERAGE') {
-          $new_calcs[] = 'AVG';
-        }
-        else {
-          $new_calcs[] = $calc;
-        }
-      }
-      variable_set('views_calc_' . $view->vid . '_row_calc', $new_calcs);
-    }
-  }
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+function views_calc_last_removed() {
+  return 2;
 }
 
 /**
- * Create a table to store custom views calculation fields.
- */
-function views_calc_update_2() {
-  $ret = array();
-  global $db_type;
-
-  switch ($db_type) {
-    case 'mysql':
-    case 'mysqli':
-      // TODO update_sql has been removed. Use the database API for any schema or data changes.
-      $ret[] = array() /* update_sql("CREATE TABLE if not exists {views_calc_fields} (
-        cid int(10) unsigned NOT NULL default '0',
-        label varchar(255),
-        format varchar(255),
-        custom varchar(255),
-        tablelist text,
-        fieldlist text,
-        calc text,
-        KEY (cid)
-      ) !40100 DEFAULT CHARACTER SET utf8 ") */;
-      break;
-    case 'postgres':
-      // TODO update_sql has been removed. Use the database API for any schema or data changes.
-      $ret[] = array() /* update_sql("CREATE TABLE if not exists {views_calc_fields} (
-        cid int(10) unsigned NOT NULL default '0',
-        label varchar(255),
-        format varchar(255),
-        custom varchar(255),
-        tablelist text,
-        fieldlist text,
-        calc text,
-        KEY (cid)
-      ) ") */;
-      break;
-  }
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
-}
-
-/**
- * @todo Please document this function.
- * @see http://drupal.org/node/1354
+ * Update views_calc_fields table to add a new base column.
  */
 function views_calc_update_6000() {
-  $ret = array();
   db_add_field('views_calc_fields', 'base', array('type' => 'varchar', 'length' => '255', 'not null' => TRUE, 'default' => 'node'));
-  // hook_update_N() no longer returns a $ret array. Instead, return
-  // nothing or a translated string indicating the update ran successfully.
-  // See http://drupal.org/node/224333#update_sql.
-  return t('TODO Add a descriptive string here to show in the UI.') /* $ret */;
+  return t("Added base to views_calc_fields table.");
 }
+
