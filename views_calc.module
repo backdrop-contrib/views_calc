@@ -116,7 +116,7 @@ function views_calc_permission() {
 function views_calc_menu() {
   $items = array();
 
-  $items['admin/config/views_calc'] = array(
+  $items['admin/structure/views_calc'] = array(
     'title' => t('Views Calc'),
     'description' => t('Set Views Calc fields and columns.'),
     'type' => MENU_NORMAL_ITEM,
@@ -126,7 +126,7 @@ function views_calc_menu() {
     'page arguments' => array('views_calc_fields_form'),
     'access arguments' => array('create views calc'),
   );
-  $items['admin/config/views_calc/fields'] = array(
+  $items['admin/structure/views_calc/fields'] = array(
     'title' => t('Fields'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 5,
@@ -135,7 +135,7 @@ function views_calc_menu() {
     'page arguments' => array('views_calc_fields_form'),
     'access arguments' => array('create views calc'),
   );
-  $items['admin/config/views_calc/settings'] = array(
+  $items['admin/structure/views_calc/settings'] = array(
     'title' => t('Settings'),
     'type' => MENU_LOCAL_TASK,
     'weight' => 6,
@@ -144,7 +144,7 @@ function views_calc_menu() {
     'page arguments' => array('views_calc_settings_form'),
     'access arguments' => array('administer views calc'),
   );
-  $items['admin/config/views_calc/export'] = array(
+  $items['admin/structure/views_calc/export'] = array(
     'title' => 'Export fields',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('views_calc_export_form'),
@@ -152,7 +152,7 @@ function views_calc_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 7,
   );
-  $items['admin/config/views_calc/import'] = array(
+  $items['admin/structure/views_calc/import'] = array(
     'title' => 'Import fields',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('views_calc_import_form'),

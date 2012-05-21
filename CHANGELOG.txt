@@ -2,4 +2,5 @@
 Version 7.1-dev
 =================
 
+- Set Views Calc fields menu item so it shows up under 'Structure'.
 - Remove 'Hide empty column' option from Views Calc table settings. We need the query and all sub-queries to have the same number of columns.
