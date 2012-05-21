@@ -1,6 +1,8 @@
+Views Calc Module 7.x
+=====================
 
-Version 7.1-dev
-=================
+Version 7.x-1.x-dev
+===================
 
 - Set Views Calc fields menu item so it shows up under 'Structure'.
 - Code cleanup, remove commented-out code.
