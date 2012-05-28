@@ -4,6 +4,8 @@ Views Calc Module 7.x
 Version 7.x-1.x-dev
 ===================
 
+- Make sure that Views Calc uses the current display.
+
 Version 7.x-1.0
 ===================
 

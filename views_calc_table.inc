@@ -149,6 +149,7 @@ class views_calc_table extends views_plugin_style_table {
     $summary_view = $this->view->clone_view();
     // copy the query object by value not by reference!
     $summary_view->query = clone $this->view->query;
+    $summary_view->set_display($this->view->current_display);
 
     // Make sure the view is completely valid.
     $errors = $summary_view->validate();
@@ -183,6 +184,7 @@ class views_calc_table extends views_plugin_style_table {
     // Execute and render the view in preview mode. Note that we only store
     // the result if the executed view query returns any result.
     $summary_view->pre_execute($this->view->args);
+
     // All results of the calculation queries are used, so we don't page them.
     // Else we will loose the global pager from the page view.
     $summary_view->set_items_per_page(0);
