@@ -215,6 +215,9 @@ class views_calc_table extends views_plugin_style_table {
     $view->query->orderby = array();
     $view->query->groupby = array();
 
+    // See if this view has any calculations.
+    $has_calcs = TRUE;
+
     $calc_fields = $view->views_calc_fields;
     foreach ($calc_fields as $calc => $fields) {
       foreach ($view->field as $field) {
@@ -242,6 +245,7 @@ class views_calc_table extends views_plugin_style_table {
         if (in_array($field->field, $fields)) {
           // Calculated fields.
           $view->query->add_field(NULL, $calc . '(' . $query_field . ')', $ext_alias);
+          $has_calcs = TRUE;
         }
       }
     }
@@ -251,6 +255,13 @@ class views_calc_table extends views_plugin_style_table {
       //$view->query->add_where(NULL, $view->base_table . "." . $view->base_field . " IN (%s)", implode(',', $view->views_calc_ids));
       $view->query->add_where(NULL, $view->base_table . "." . $view->base_field, $view->views_calc_ids);
     }
+
+    // TODO We may need to ask which field to group by.
+    // Some databases are going to complain if we don't have a groupby field with using aggregation.
+    if ($has_calcs) {
+      $this->view->query->add_groupby($this->view->base_table . '.' . $this->view->base_field);
+    }
+
   }
 
   /**

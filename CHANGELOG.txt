@@ -4,6 +4,7 @@ Views Calc Module 7.x
 Version 7.x-1.x-dev
 ===================
 
+- Issue #1627660, Make sure that a groupby is added when the aggregation views are created.
 - Make sure that Views Calc uses the current display.
 
 Version 7.x-1.0
