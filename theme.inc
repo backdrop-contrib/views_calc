@@ -310,7 +310,7 @@ function views_calc_table_total(&$vars, $key, $totals) {
             // and in ->options for other fields that are based on the numeric field handler.
             if (isset($fields[$field]->field_info)) {
               $separator = !empty($fields[$field]->options['settings']['thousands_separator']) ? $fields[$field]->options['settings']['thousands_separator'] : $options['separator'];
-              $$decimal = !empty($fields[$field]->options['settings']['decimal_separator']) ? $fields[$field]->options['settings']['decimal_separator'] : $options['decimal'];
+              $decimal = !empty($fields[$field]->options['settings']['decimal_separator']) ? $fields[$field]->options['settings']['decimal_separator'] : $options['decimal'];
               $precision = !empty($fields[$field]->options['settings']['scale']) ? $fields[$field]->options['settings']['scale'] : $options['precision'];
             }
             else {
