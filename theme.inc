@@ -86,6 +86,9 @@ function theme_views_calc_ui_table($variables) {
  * Display a view as a table style.
  */
 function template_preprocess_views_calc_table(&$vars) {
+  // Some plugins assume a row_index is set.
+  if (!isset($vars['view']->row_index)) $vars['view']->row_index = '';
+
   $view = $vars['view'];
   if (!empty($view->views_calc_calculation)) {
     $vars['rows'] = array();
