@@ -120,7 +120,7 @@ class views_calc_table extends views_plugin_style_table {
     if (!empty($this->view->views_calc_calculation)) {
       return;
     }
-    
+
     $this->view->totals = array();
     $this->view->sub_totals = array();
     $this->view->views_calc_fields = $calc_fields;
@@ -171,12 +171,12 @@ class views_calc_table extends views_plugin_style_table {
     $summary_view->views_calc_fields = $this->view->views_calc_fields;
     $summary_view->build_info = $this->view->build_info;
     $summary_view->field = $this->view->field;
-    
+
     // Call the method which adds aggregation fields before rendering
     // In an earlier version this was done in the overridden method query() of this class
     // which is not called for some reason here.
     $this->add_aggregation_fields($summary_view);
-    
+
     // We don't need any offset in the calculation queries because
     // the statement does only return the records with the passed ids
     $summary_view->query->offset = 0;
@@ -190,7 +190,7 @@ class views_calc_table extends views_plugin_style_table {
     $summary_view->set_items_per_page(0);
     $summary_view->execute();
     $summary_view->post_execute();
-    
+
     if (!empty($summary_view->result)) {
       if ($is_subtotal) {
         $this->view->sub_totals = array_shift($summary_view->result);
@@ -238,10 +238,10 @@ class views_calc_table extends views_plugin_style_table {
         if ($query_alias == 'unknown') {
           continue;
         }
-        $view->query->add_table($field->table, NULL, NULL, $field->table);
+        $view->query->add_table($field->table, $field->relationship, NULL, $field->table);
         // aggregation functions
         $ext_alias = $calc . '__' . $query_alias;
-        
+
         if (in_array($field->field, $fields)) {
           // Calculated fields.
           $view->query->add_field(NULL, $calc . '(' . $query_field . ')', $ext_alias);
@@ -278,7 +278,7 @@ class views_calc_table extends views_plugin_style_table {
     $calc_fields = array();
     foreach ($columns as $field => $column) {
       if ($field == $column && empty($fields[$field]->options['exclude'])) {
-        if ($options['info'][$field]['has_calc']) {       
+        if ($options['info'][$field]['has_calc']) {
           foreach ($calcs as $calc) {
             if (isset($this->options['info'][$field]['calc'][$calc])) {
               $calc_fields[$calc][] = $field;

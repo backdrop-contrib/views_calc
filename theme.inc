@@ -274,6 +274,11 @@ function views_calc_table_total(&$vars, $key, $totals) {
         $query_alias = $field->field_alias;
       }
       $ext_alias = strtolower($calc) . '__' . $query_alias;
+
+      // Limit the length of the alias up to 60 characters, because
+      // stored in $total alias has been truncated in views add_field() function.
+      $ext_alias = strtolower(substr($ext_alias, 0, 60));
+
       if (in_array($field->field, $calc_fields)) {
         $row->{$query_alias} = $totals->{$ext_alias};
       }
