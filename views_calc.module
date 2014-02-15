@@ -581,3 +581,27 @@ function views_process_dependency($element, $edit, &$form_state, &$form) {
 
   return $element;
 }
+
+/**
+  * Edge case if the same field has been used more than once,
+  * most likely with relationships since you could show title
+  * for each relationship. Results in a field like title becoming
+  * title_1.
+  */
+function views_calc_adj_full_alias($alias, $field) {
+  if ($field->field != $field->options['id']) {
+    $addition = str_replace($field->field, '', $field->options['id']) .  '_';
+    $ext_alias = $field->relationship . $addition . $field->real_field;
+    $ext_alias = views_calc_shorten($ext_alias);
+    return $ext_alias;
+  }
+  return $alias;
+}
+
+/**
+ * Make sure our reconstructed aliases don't get too long
+ */
+function views_calc_shorten($alias) {
+  return strtolower(substr($alias, 0, 60));
+}
+

@@ -259,7 +259,10 @@ function views_calc_table_total(&$vars, $key, $totals) {
     else {
       $query_alias = $field->field_alias;
     }
-    $baserow->{$query_alias} = $totals->{$query_alias};
+    $query_alias = views_calc_adj_full_alias($query_alias, $field);
+    if (!empty($totals->{$query_alias})) {
+      $baserow->{$query_alias} = $totals->{$query_alias};
+    }
   }
   // Build aggregation rows, one per function.
   foreach ($view->views_calc_fields as $calc => $calc_fields) {
@@ -277,10 +280,11 @@ function views_calc_table_total(&$vars, $key, $totals) {
 
       // Limit the length of the alias up to 60 characters, because
       // stored in $total alias has been truncated in views add_field() function.
-      $ext_alias = strtolower(substr($ext_alias, 0, 60));
-
-      if (in_array($field->field, $calc_fields)) {
-        $row->{$query_alias} = $totals->{$ext_alias};
+      $ext_alias = views_calc_shorten($ext_alias);
+      if (in_array($field->options['id'], $calc_fields)) {
+        if (!empty($totals->{$ext_alias})) {
+          $row->{$query_alias} = $totals->{$ext_alias};
+        }
       }
     }
     // Build row output data.

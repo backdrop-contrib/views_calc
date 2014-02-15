@@ -45,7 +45,6 @@ class views_calc_table extends views_plugin_style_table {
 
     $handlers = $this->display->handler->get_handlers('field');
     $columns = $this->sanitize_columns($this->options['columns']);
-
     foreach ($columns as $field => $column) {
       $safe = str_replace(array('][', '_', ' '), '-', $field);
       $id = 'edit-style-options-columns-' . $safe;
@@ -240,9 +239,8 @@ class views_calc_table extends views_plugin_style_table {
         }
         $view->query->add_table($field->table, $field->relationship, NULL, $field->table);
         // aggregation functions
-        $ext_alias = $calc . '__' . $query_alias;
-
-        if (in_array($field->field, $fields)) {
+        $ext_alias = views_calc_shorten($calc . '__' . $query_alias);
+        if (in_array($field->options['id'], $fields)) {
           // Calculated fields.
           $view->query->add_field(NULL, $calc . '(' . $query_field . ')', $ext_alias);
           $has_calcs = TRUE;
