@@ -146,6 +146,7 @@ class views_calc_table extends views_plugin_style_table {
   function execute_summary_view($ids = array()) {
     // Clone view for local subquery.
     $summary_view = $this->view->clone_view();
+    $summary_view->set_display($this->view->current_display);
     // copy the query object by value not by reference!
     $summary_view->query = clone $this->view->query;
     $summary_view->set_display($this->view->current_display);
