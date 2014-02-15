@@ -221,10 +221,10 @@ function template_preprocess_views_calc_table(&$vars) {
   $vars['totals'] = array();
   $vars['sub_totals'] = array();
   if ($view->query->pager->get_total_items() > $view->get_items_per_page()
-      && $view->sub_totals) {
+      && isset($view->sub_totals)) {
     views_calc_table_total($vars, 'sub_totals', $view->sub_totals);
   }
-  if ($view->totals) {
+  if (isset($view->totals)) {
     views_calc_table_total($vars, 'totals', $view->totals);
   }
 
