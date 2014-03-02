@@ -395,7 +395,6 @@ function views_calc_fields_form_submit($form, &$form_state) {
         $repl[] = '${1}' . $key;
       }
       $form_values[$delta]['calc'] = preg_replace($label_patterns, $repl, $form_values[$delta]['calc']);
-
       // Extract the fields and table names from the calculation.
       $tables = array();
       $fields = array();

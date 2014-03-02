@@ -298,7 +298,7 @@ function views_calc_table_total(&$vars, $key, $totals) {
       }
       if ($field == $column && empty($fields[$field]->options['exclude'])) {
         // Process only calculated, non-excluded fields.
-        if (in_array($field, $calc_fields) && isset($row->$field_alias)) {
+        if (in_array($field, $calc_fields)) {
 
           if ($calc == 'COUNT') {
 
@@ -327,7 +327,13 @@ function views_calc_table_total(&$vars, $key, $totals) {
               $decimal = !empty($fields[$field]->options['decimal']) ? $fields[$field]->options['decimal'] : $options['decimal'];
               $precision = !empty($fields[$field]->options['precision']) ? $fields[$field]->options['precision'] : $options['precision'];
             }
-            $vars[$key][$calc][$column] = number_format($row->$field_alias, $precision, $decimal, $separator);
+            // Make sure this is a number before formatting it.
+            if (isset($row->$field_alias) && is_numeric($row->$field_alias)) {
+              $vars[$key][$calc][$column] = number_format($row->$field_alias, $precision, $decimal, $separator);
+            }
+            else {
+              $vars[$key][$calc][$column] = number_format(0, $precision, $decimal, $separator);
+            }
           }
         }
         else {
