@@ -92,7 +92,13 @@ class views_calc_field_handler extends views_handler_field {
     if (empty($function) || $function == 'none') {
       $function = 'check_plain';
     }
-    $raw = $function($value, $vars);
+
+    if (empty($vars)) {
+      $raw = $function($value);
+    }
+    else {
+      $raw = $function($value, $vars);
+    }
 
     // This needs to be set for the $this->render_link() to work. It would
     // have been set in the query, if we hadn't bypassed the normal query.

@@ -5,6 +5,21 @@
  * and compute (SUM, COUNT, AVG, etc) columns of numeric data in a views table.
  */
 
+module_load_include('inc', 'views_calc', 'theme');
+module_load_include('inc', 'views_calc', 'views_calc.views');
+module_load_include('inc', 'views_ui', 'views_ui.admin');
+
+/**
+ * Implements hook_autoload_info().
+ */
+function views_calc_autoload_info() {
+  return array(
+    'views_calc_field_handler' => 'views_calc_field_handler.inc',
+    'views_calc_handler_sort' => 'views_calc_handler_sort.inc',
+    'views_calc_table' => 'views_calc_table.inc',
+  );
+}
+
 /**
  * Implements hook_views_api().
  */
@@ -46,14 +61,14 @@ function views_calc_help($section, $arg) {
 /**
  * Default SQL operator alternatives.
  *
- * The ones allowed in this system are stored in the
- * variable views_calc_operators, and can be changed
+ * The ones allowed in this system are stored in
+ * views_calc.settings, and can be changed
  * at admin/settings/views_calc.
  *
  */
 function _views_calc_operators() {
-  $default = array('+', '-', '*', '/', '(', ')', ',', "'", 'CONCAT', 'MIN', 'MAX', 'ROUND', 'NOW()');
-  $operators = variable_get('views_calc_operators', implode("\n", $default));
+  $config = config('views_calc.settings');
+  $operators = $config->get('operators');
   return explode("\n", $operators);
 
 }
@@ -170,7 +185,7 @@ function views_calc_menu() {
 function views_calc_settings_form($form, &$form_state) {
   drupal_set_title(t('Views Calc'));
   $operators = _views_calc_operators();
-  $form['views_calc_operators'] = array(
+  $form['operators'] = array(
     '#type' => 'textarea',
     '#default_value' => implode("\n", $operators),
     '#title' => t('Allowable functions and operators'),
@@ -188,7 +203,10 @@ function views_calc_settings_form($form, &$form_state) {
  */
 function views_calc_settings_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];
-  variable_set('views_calc_operators', $form_values['views_calc_operators']);
+
+  $config = config('views_calc.settings');
+  $config->set('operators', $form_values['operators']);
+  $config->save();
 }
 
 /**
@@ -200,7 +218,6 @@ function views_calc_fields_form($form, &$form_state) {
   $i = 0;
   $substitutions = array();
   $help = t('<p>The specific fields that are available in any view depend on the base table used for that view.</p>');
-  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views') . '/includes/admin.inc';
   $base_tables = views_fetch_base_tables();
   foreach ($base_tables as $base => $data) {
     $base_subs = _views_calc_substitutions($base);
@@ -254,7 +271,6 @@ function views_calc_field_form_item($i, $field, $substitutions) {
     $field->base = '';
 
   }
-  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views') . '/includes/admin.inc';
   $options = array();
   $base_tables = views_fetch_base_tables();
   foreach ($base_tables as $base => $data) {
@@ -317,10 +333,8 @@ function views_calc_field_form_item($i, $field, $substitutions) {
  * Validate the views calc settings
  */
 function views_calc_fields_form_validate($form, &$form_state) {
-  $form_values = $form_state['values'];
-  $edit = $form_values;
-  foreach ($edit as $delta => $item) {
-    if ($item['calc'] == '' || !is_numeric($delta)) {
+  foreach ($form_state['values'] as $delta => $item) {
+    if (!is_numeric($delta) || $item['calc'] == '') {
       // remove blank fields, don't save them
       continue;
     }
@@ -349,7 +363,7 @@ function views_calc_fields_form_validate($form, &$form_state) {
       }
       $remaining = trim(preg_replace($patterns, $repl, $remaining));
       if (!empty($remaining)) {
-        form_set_error($form_values[$delta]['calc'], t('The values %remaining in %field are not allowed.', array('%remaining' => $remaining, '%field' => $item['label'])));
+        form_set_error($form_state['values'][$delta]['calc'], t('The values %remaining in %field are not allowed.', array('%remaining' => $remaining, '%field' => $item['label'])));
       }
     }
   }
@@ -431,7 +445,6 @@ function views_calc_views_fetch_fields($base, $type) {
   if (!module_exists('views')) {
     return array();
   }
-  require_once DRUPAL_ROOT . '/' . drupal_get_path('module', 'views') . '/includes/admin.inc';
   return views_fetch_fields($base, $type);
 }
 
@@ -603,4 +616,3 @@ function views_calc_adj_full_alias($alias, $field) {
 function views_calc_shorten($alias) {
   return strtolower(substr($alias, 0, 60));
 }
-
