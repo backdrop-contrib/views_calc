@@ -1,6 +1,7 @@
 name = Views Calc
 description = This module will allow you to add calculated fields to views tables and compute columns of numeric data in a views table.
 backdrop = 1.x
+type = module
 package = Views
 
 dependencies[] = views
