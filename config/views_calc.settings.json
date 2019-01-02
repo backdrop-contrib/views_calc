@@ -1,16 +1,18 @@
 {
   "_config_name": "views_calc.settings",
-  "operators": "+
--
-*
-/
-(
-)
-,
-'
-CONCAT
-MIN
-MAX
-ROUND
-NOW()"
+  "operators": [
+    "+",
+    "-",
+    "*",
+    "/",
+    "(",
+    ")",
+    ",",
+    "'",
+    "CONCAT",
+    "MIN",
+    "MAX",
+    "ROUND",
+    "NOW()"
+  ]
 }

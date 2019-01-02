@@ -59,21 +59,6 @@ function views_calc_help($section, $arg) {
 }
 
 /**
- * Default SQL operator alternatives.
- *
- * The ones allowed in this system are stored in
- * views_calc.settings, and can be changed
- * at admin/settings/views_calc.
- *
- */
-function _views_calc_operators() {
-  $config = config('views_calc.settings');
-  $operators = $config->get('operators');
-  return explode("\n", $operators);
-
-}
-
-/**
  *  Column calculation alternatives.
  */
 function _views_calc_calc_options() {
@@ -184,10 +169,10 @@ function views_calc_menu() {
  */
 function views_calc_settings_form($form, &$form_state) {
   drupal_set_title(t('Views Calc'));
-  $operators = _views_calc_operators();
+  $operators = config_get('views_calc.settings', 'operators');
   $form['operators'] = array(
     '#type' => 'textarea',
-    '#default_value' => implode("\n", $operators),
+    '#default_value' => implode(PHP_EOL, $operators),
     '#title' => t('Allowable functions and operators'),
     '#rows' => intval(sizeof($operators) + 2),
   );
@@ -205,7 +190,7 @@ function views_calc_settings_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];
 
   $config = config('views_calc.settings');
-  $config->set('operators', $form_values['operators']);
+  $config->set('operators', explode(PHP_EOL, $form_values['operators']));
   $config->save();
 }
 
@@ -305,11 +290,12 @@ function views_calc_field_form_item($i, $field, $substitutions) {
     '#default_value' => str_replace('ViewsCalc: ', '', $field->label),
     '#description' => t('The views field name for this field (i.e. Views Calc: My Calculation).'),
   );
+  $operators = implode(' ', config_get('views_calc.settings', 'operators'));
   $form['group'][$i]['calc'] = array(
     '#type' => 'textarea',
     '#title' => t('Calculation'),
     '#default_value' => strtr($field->calc, $substitutions),
-    '#description' => t("<p>The query operation to be performed, using numbers, field substitutions, and " . implode(' ', _views_calc_operators()) . ". Leave spaces between parentheses and field names, i.e. 'CONCAT( %field1, ' ', %field2 )'. <strong>" . t('Note that all fields must be from the base table selected above! You cannot combine fields from different base tables.') . "</strong></p>"),
+    '#description' => t("<p>The query operation to be performed, using numbers, field substitutions, and " . $operators . ". Leave spaces between parentheses and field names, i.e. 'CONCAT( %field1, ' ', %field2 )'. <strong>" . t('Note that all fields must be from the base table selected above! You cannot combine fields from different base tables.') . "</strong></p>"),
   );
   $form['group'][$i]['format'] = array(
     '#type' => 'select',
@@ -484,7 +470,7 @@ function _views_calc_fields() {
  * An array of allowable calculation values.
  */
 function _views_calc_replacements() {
-  $operators     = array_filter(_views_calc_operators(), 'trim');
+  $operators     = array_filter(config_get('views_calc.settings', 'operators'), 'trim');
   $numbers       = range(0, 9);
   return array_merge($operators, $numbers);
 }
