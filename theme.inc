@@ -13,7 +13,7 @@
 function theme_views_calc_ui_table($variables) {
   $form = $variables['form'];
 
-  $output = drupal_render($form['description_markup']);
+  $output = backdrop_render($form['description_markup']);
 
   $header = array(
     t('Field'),
@@ -38,22 +38,22 @@ function theme_views_calc_ui_table($variables) {
   $rows = array();
   foreach (element_children($form['columns']) as $id) {
     $row = array();
-    $row[] = drupal_render($form['info'][$id]['name']);
-    $row[] = drupal_render($form['info'][$id]['align']);
-    $row[] = drupal_render($form['info'][$id]['has_calc']) . drupal_render($form['info'][$id]['calc']);
-    $row[] = drupal_render($form['columns'][$id]);
-    $row[] = drupal_render($form['info'][$id]['separator']);
+    $row[] = backdrop_render($form['info'][$id]['name']);
+    $row[] = backdrop_render($form['info'][$id]['align']);
+    $row[] = backdrop_render($form['info'][$id]['has_calc']) . backdrop_render($form['info'][$id]['calc']);
+    $row[] = backdrop_render($form['columns'][$id]);
+    $row[] = backdrop_render($form['info'][$id]['separator']);
     if (!empty($form['info'][$id]['sortable'])) {
       $row[] = array(
-        'data' => drupal_render($form['info'][$id]['sortable']),
+        'data' => backdrop_render($form['info'][$id]['sortable']),
         'align' => 'center',
       );
       $row[] = array(
-        'data' => drupal_render($form['default'][$id]),
+        'data' => backdrop_render($form['default'][$id]),
         'align' => 'center',
       );
       $row[] = array(
-        'data' => drupal_render($form['info'][$id]['default_sort_order']),
+        'data' => backdrop_render($form['info'][$id]['default_sort_order']),
         'align' => 'center',
       );
     }
@@ -72,12 +72,12 @@ function theme_views_calc_ui_table($variables) {
   // Add the special 'None' row.
   $rows[] = array(t('None'), '', '', '', '', '', array(
       'align' => 'center',
-      'data' => drupal_render($form['default'][-1]),
+      'data' => backdrop_render($form['default'][-1]),
     ), '');
 
   $output .= theme('table', array('header' => $header, 'rows' => $rows));
 
-  $output .= drupal_render_children($form);
+  $output .= backdrop_render_children($form);
   return $output;
 }
 
@@ -95,7 +95,7 @@ function template_preprocess_views_calc_table(&$vars) {
     return;
   }
 
-  drupal_add_css(drupal_get_path('module', 'views_calc') . '/views_calc.css');
+  backdrop_add_css(backdrop_get_path('module', 'views_calc') . '/views_calc.css');
 
   // We need the raw data for this grouping, which is passed in as $vars['rows'].
   // However, the template also needs to use for the rendered fields.  We
@@ -125,7 +125,7 @@ function template_preprocess_views_calc_table(&$vars) {
   foreach ($columns as $field => $column) {
     // Create a second variable so we can easily find what fields we have and what the
     // CSS classes should be.
-    $vars['fields'][$field] = drupal_clean_css_identifier($field);
+    $vars['fields'][$field] = backdrop_clean_css_identifier($field);
     if ($active == $field) {
       $vars['fields'][$field] .= ' active';
     }
@@ -183,7 +183,7 @@ function template_preprocess_views_calc_table(&$vars) {
 
     // Add a CSS align class to each field if one was set
     if (!empty($options['info'][$field]['align'])) {
-      $vars['fields'][$field] .= ' ' . drupal_clean_css_identifier($options['info'][$field]['align']);
+      $vars['fields'][$field] .= ' ' . backdrop_clean_css_identifier($options['info'][$field]['align']);
     }
   }
 
@@ -231,7 +231,7 @@ function template_preprocess_views_calc_table(&$vars) {
   // Add classes.
   $vars['class'] = 'views-table';
   if (!empty($options['sticky'])) {
-    drupal_add_js('misc/tableheader.js');
+    backdrop_add_js('misc/tableheader.js');
     $vars['class'] .= " sticky-enabled";
   }
 }

@@ -35,9 +35,9 @@ function views_calc_views_data() {
  * Implements hook_views_plugins().
  */
 function views_calc_views_plugins() {
-  $path = drupal_get_path('module', 'views_calc');
-  $views_path = drupal_get_path('module', 'views');
-  require_once DRUPAL_ROOT . '/' . "./$path/theme.inc";
+  $path = backdrop_get_path('module', 'views_calc');
+  $views_path = backdrop_get_path('module', 'views');
+  require_once BACKDROP_ROOT . '/' . "./$path/theme.inc";
 
   $data = array(
     'module' => 'views_calc', // This just tells our themes are elsewhere.

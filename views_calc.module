@@ -26,7 +26,7 @@ function views_calc_autoload_info() {
 function views_calc_views_api() {
   return array(
     'api' => 2,
-    'path' => drupal_get_path('module', 'views_calc'),
+    'path' => backdrop_get_path('module', 'views_calc'),
   );
 }
 
@@ -34,7 +34,7 @@ function views_calc_views_api() {
  * Implements hook_theme().
  */
 function views_calc_theme() {
-  $path = drupal_get_path('module', 'views_calc');
+  $path = backdrop_get_path('module', 'views_calc');
   return array(
     'views_calc_ui_table' => array(
       'render element' => 'form',
@@ -122,7 +122,7 @@ function views_calc_menu() {
     'type' => MENU_NORMAL_ITEM,
     'weight' => 10,
     'priority' => 1,
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('views_calc_fields_form'),
     'access arguments' => array('create views calc'),
   );
@@ -131,7 +131,7 @@ function views_calc_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 5,
     'priority' => 1,
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('views_calc_fields_form'),
     'access arguments' => array('create views calc'),
   );
@@ -140,13 +140,13 @@ function views_calc_menu() {
     'type' => MENU_LOCAL_TASK,
     'weight' => 6,
     'priority' => 1,
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('views_calc_settings_form'),
     'access arguments' => array('administer views calc'),
   );
   $items['admin/structure/views_calc/export'] = array(
     'title' => 'Export fields',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('views_calc_export_form'),
     'access arguments' => array('create views calc'),
     'type' => MENU_LOCAL_TASK,
@@ -154,7 +154,7 @@ function views_calc_menu() {
   );
   $items['admin/structure/views_calc/import'] = array(
     'title' => 'Import fields',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('views_calc_import_form'),
     'access arguments' => array('create views calc'),
     'type' => MENU_LOCAL_TASK,
@@ -168,7 +168,7 @@ function views_calc_menu() {
  * FAPI settings_form.
  */
 function views_calc_settings_form($form, &$form_state) {
-  drupal_set_title(t('Views Calc'));
+  backdrop_set_title(t('Views Calc'));
   $operators = config_get('views_calc.settings', 'operators');
   $form['operators'] = array(
     '#type' => 'textarea',
@@ -301,7 +301,7 @@ function views_calc_field_form_item($i, $field, $substitutions) {
     '#type' => 'select',
     '#title' => t('Format'),
     '#default_value' => $field->format,
-    '#options' => drupal_map_assoc(array_keys(_views_calc_format_options())),
+    '#options' => backdrop_map_assoc(array_keys(_views_calc_format_options())),
     '#description' => t('The format of the result of this calculation.'),
   );
   $form['group'][$i]['custom'] = array(
@@ -414,14 +414,14 @@ function views_calc_fields_form_submit($form, &$form_state) {
 
   foreach ((array) $form_values as $delta => $value) {
     if (empty($value['cid'])) {
-      drupal_write_record('views_calc_fields', $value);
+      backdrop_write_record('views_calc_fields', $value);
     }
     else {
-      drupal_write_record('views_calc_fields', $value, array('cid'));
+      backdrop_write_record('views_calc_fields', $value, array('cid'));
     }
   }
   views_invalidate_cache();
-  drupal_set_message(t('Views Calc fields were updated.'));
+  backdrop_set_message(t('Views Calc fields were updated.'));
 }
 
 /**
@@ -554,9 +554,9 @@ function views_calc_import_form_submit($form, &$form_state) {
     $fields[$delta]['cid'] = NULL;
   }
 
-  // Run the values thru drupal_execute() so they are properly validated.
+  // Run the values thru backdrop_execute() so they are properly validated.
   $form_state = array('values' => $fields);
-  drupal_form_submit('views_calc_fields_form', $form_state);
+  backdrop_form_submit('views_calc_fields_form', $form_state);
 
 }
 
@@ -572,7 +572,7 @@ function views_process_dependency($element, $edit, &$form_state, &$form) {
     else {
       views_add_js('dependent');
       $options['viewsAjax']['formRelationships'][$element['#id']] = array('num' => $element['#dependency_count'], 'values' => $element['#dependency']);
-      drupal_add_js($options, 'setting');
+      backdrop_add_js($options, 'setting');
     }
     $dependencies[$element['#id']] = TRUE;
   }

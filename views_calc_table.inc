@@ -155,7 +155,7 @@ class views_calc_table extends views_plugin_style_table {
     $errors = $summary_view->validate();
     if (is_array($errors)) {
       foreach ($errors as $error) {
-        drupal_set_message($error, 'error');
+        backdrop_set_message($error, 'error');
       }
       return NULL;
     }
