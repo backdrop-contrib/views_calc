@@ -65,9 +65,8 @@ function views_calc_schema() {
  * Implements hook_uninstall().
  */
 function views_calc_uninstall() {
-  db_query("DROP TABLE {views_calc_fields}");
-
-  variable_del('views_calc_operators');
+  $config = config('views_calc.settings');
+  $config->delete();
 }
 
 /**
