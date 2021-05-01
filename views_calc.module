@@ -165,6 +165,17 @@ function views_calc_menu() {
 }
 
 /**
+ * Implements hook_config_info().
+ */
+function views_calc_config_info() {
+  $prefixes['views_calc.settings'] = array(
+    'label' => t('Views Calc settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
+
+/**
  * FAPI settings_form.
  */
 function views_calc_settings_form($form, &$form_state) {
