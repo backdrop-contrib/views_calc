@@ -75,7 +75,8 @@ function views_calc_uninstall() {
 function views_calc_update_1000() {
   // Migrate variables to config.
   $config = config('views_calc.settings');
-  $config->set('operators', update_variable_get('views_calc_operators', ''));
+  $operators = update_variable_get('views_calc_operators');
+  $config->set('operators', explode(PHP_EOL, $operators));
   $config->save();
 
   // Delete variables.
