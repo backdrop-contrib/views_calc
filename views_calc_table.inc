@@ -238,6 +238,7 @@ class views_calc_table extends views_plugin_style_table {
         if ($query_alias == 'unknown') {
           continue;
         }
+        $view->query->add_table($field->table, $field->relationship, NULL, $field->table);
         // aggregation functions
         $ext_alias = views_calc_shorten($calc . '__' . $query_alias);
         if (in_array($field->options['id'], $fields)) {
