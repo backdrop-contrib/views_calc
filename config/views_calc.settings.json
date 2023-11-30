@@ -13,6 +13,6 @@
     "MIN",
     "MAX",
     "ROUND",
-    "NOW()"
+    "NOW"
   ]
 }
