@@ -224,7 +224,7 @@ function views_calc_fields_form($form, &$form_state) {
       '#value' => theme('item_list', array('items' => $base_subs)),
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
-	     '#attributes' => array(),
+      '#attributes' => array(),
       '#children' => '',
     );
     $help .= theme('fieldset', array('element' => $fieldset));
@@ -442,8 +442,12 @@ function views_calc_views_fetch_fields($base, $type) {
   if (!module_exists('views')) {
     return array();
   }
-  module_load_include('inc', 'views', 'includes/utility');
-  return views_fetch_fields($base, $type);
+  if (module_load_include('inc', 'views', 'includes/utility')) {
+    return views_fetch_fields($base, $type);
+  }
+  else {
+    return array();
+  }
 }
 
 /**
