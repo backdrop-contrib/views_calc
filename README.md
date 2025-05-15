@@ -23,6 +23,7 @@ Current Maintainers
 -------------------
 
 - Joseph Flatt (https://github.com/hosef)
+- Jason Flatt (https://github.com/oadaeh)
 
 Credits
 -------
