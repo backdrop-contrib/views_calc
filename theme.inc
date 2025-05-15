@@ -282,7 +282,7 @@ function views_calc_table_total(&$vars, $key, $totals) {
       // stored in $total alias has been truncated in views add_field() function.
       $ext_alias = views_calc_shorten($ext_alias);
       if (in_array($field->options['id'], $calc_fields)) {
-        if (!empty($totals->{$ext_alias})) {
+        if (isset($totals->{$ext_alias})) {
           $row->{$query_alias} = $totals->{$ext_alias};
         }
       }
@@ -301,10 +301,11 @@ function views_calc_table_total(&$vars, $key, $totals) {
         if (in_array($field, $calc_fields)) {
 
           if ($calc == 'COUNT') {
-
-            // COUNT is always a numeric value, no matter what kind of field it is.
-
-            $vars[$key][$calc][$column] =  number_format($row->$field_alias, 0, 0, ',');
+            if (isset($row->$field_alias)) {
+              // COUNT is always a numeric value, no matter what kind of field
+              // it is.
+              $vars[$key][$calc][$column] = number_format($row->$field_alias, 0, 0, ',');
+            }
           }
           else {
 
