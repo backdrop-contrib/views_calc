@@ -240,17 +240,15 @@ function template_preprocess_views_calc_table(&$vars) {
  * Build total var line.
  */
 function views_calc_table_total(&$vars, $key, $totals) {
-
   $view = $vars['view'];
-
   $options  = $view->style_plugin->options;
   $handler  = $view->style_plugin;
   $fields   = &$view->field;
   $columns  = $handler->sanitize_columns($options['columns'], $fields);
-
   $vars[$key] = array();
   $added_label = array();
-  // Build a data baserow with the default fields of the view
+
+  // Build a data baserow with the default fields of the view.
   $baserow = new StdClass();
   foreach ($view->field as $field) {
     if (isset($field->aliases['entity_type'])) {
@@ -259,11 +257,13 @@ function views_calc_table_total(&$vars, $key, $totals) {
     else {
       $query_alias = $field->field_alias;
     }
+
     $query_alias = views_calc_adj_full_alias($query_alias, $field);
     if (!empty($totals->{$query_alias})) {
       $baserow->{$query_alias} = $totals->{$query_alias};
     }
   }
+
   // Build aggregation rows, one per function.
   foreach ($view->views_calc_fields as $calc => $calc_fields) {
     // Rebuild row as if it where single queries.
@@ -278,8 +278,8 @@ function views_calc_table_total(&$vars, $key, $totals) {
       }
       $ext_alias = strtolower($calc) . '__' . $query_alias;
 
-      // Limit the length of the alias up to 60 characters, because
-      // stored in $total alias has been truncated in views add_field() function.
+      // Limit the length of the alias up to 60 characters, because  $total
+      // alias has been truncated in views add_field() function.
       $ext_alias = views_calc_shorten($ext_alias);
       if (in_array($field->options['id'], $calc_fields)) {
         if (isset($totals->{$ext_alias})) {
@@ -287,19 +287,22 @@ function views_calc_table_total(&$vars, $key, $totals) {
         }
       }
     }
+
     // Build row output data.
     foreach ($columns as $field => $column) {
-      if ((array_key_exists('entity_type', $fields[$field]->aliases))
-      && isset($fields[$field]->aliases['entity_type'])) {
+      if (
+        array_key_exists('entity_type', $fields[$field]->aliases)
+        && isset($fields[$field]->aliases['entity_type'])
+      ) {
         $field_alias = $fields[$field]->aliases['entity_type'];
       }
       else {
         $field_alias = $fields[$field]->field_alias;
       }
+
       if ($field == $column && empty($fields[$field]->options['exclude'])) {
         // Process only calculated, non-excluded fields.
         if (in_array($field, $calc_fields)) {
-
           if ($calc == 'COUNT') {
             if (isset($row->$field_alias)) {
               // COUNT is always a numeric value, no matter what kind of field
@@ -308,16 +311,19 @@ function views_calc_table_total(&$vars, $key, $totals) {
             }
           }
           else {
+            // Calculations other than COUNT should run the value through the
+            // field's theme. This will allow dates and numeric values to apply
+            // the right formatting to the result. Unfortunately, there seems to
+            // be no easy way to push an arbitrary value through the field
+            // theme. The theme may be retrieving its value from the cached
+            // entity. We would like to do $fields[$field]->theme($row), but
+            // that won't work.
 
-            // Calculations other than COUNT should run the value through the field's theme.
-            // This will allow dates and numeric values to apply the right formatting to the result.
-            // Unfortunately, there seems to be no easy way to push an arbitrary value through
-            // the field theme. The theme may be retrieving its value from the cached entity.
-            // We would like to do $fields[$field]->theme($row), but that won't work.
-
-            // If this is a numeric field, get its options. We can at least use that in the aggregation.
-            // The settings we need are in ->options['settings'] for fields created by the field module,
-            // and in ->options for other fields that are based on the numeric field handler.
+            // If this is a numeric field, get its options. We can at least use
+            // that in the aggregation. The settings we need are in
+            // ->options['settings'] for fields created by the field module, and
+            // in ->options for other fields that are based on the numeric field
+            // handler.
             if (isset($fields[$field]->field_info)) {
               $separator = !empty($fields[$field]->options['settings']['thousands_separator']) ? $fields[$field]->options['settings']['thousands_separator'] : $options['separator'];
               $decimal = !empty($fields[$field]->options['settings']['decimal_separator']) ? $fields[$field]->options['settings']['decimal_separator'] : $options['decimal'];
@@ -339,8 +345,8 @@ function views_calc_table_total(&$vars, $key, $totals) {
         }
         else {
           // Add the calc type label into the first empty column.
-          // Identify which is the sub total and which the grand total
-          // when both are provided.
+          // Identify which is the sub total and which the grand total when both
+          // are provided.
           if (empty($added_label[$calc])) {
             if ($key == 'sub_totals') {
               $label = t("Page !Calculation", array("!Calculation" => $calc));
