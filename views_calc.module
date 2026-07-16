@@ -90,22 +90,16 @@ function _views_calc_format_options() {
 
 /**
  * Implements hook_permission().
- *
- * The permission 'administer views calc' has rights to alter the SQL
- * operators that can be used in calculations.
- *
- * The permission 'create views calc' has rights to create calculated
- * fields and set calculation columns on views.
  */
 function views_calc_permission() {
   return array(
     'create views calc' => array(
-      'title' => t('create views calc'),
-      'description' => t('TODO Add a description for \'create views calc\''),
+      'title' => t('Create Views Calc fields'),
+      'description' => t('Can create calculated fields and set calculation columns on views.'),
     ),
     'administer views calc' => array(
-      'title' => t('administer views calc'),
-      'description' => t('TODO Add a description for \'administer views calc\''),
+      'title' => t('Administer Views Calc'),
+      'description' => t('Can alter the SQL operators that can be used in calculations.'),
     ),
   );
 }
